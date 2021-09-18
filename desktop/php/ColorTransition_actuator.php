@@ -3,7 +3,7 @@ if (!isConnect('admin')) {
 	throw new Exception('{{401 - Accès non autorisé}}');
 }
 // Déclaration des variables obligatoires
-$plugin = plugin::byId('template');
+$plugin = plugin::byId('ColorTransition_actuator');
 sendVarToJS('eqType', $plugin->getId());
 $eqLogics = eqLogic::byType($plugin->getId());
 ?>
@@ -25,7 +25,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 				<span>{{Configuration}}</span>
 			</div>
 		</div>
-		<legend><i class="fas fa-table"></i> {{Mes templates}}</legend>
+		<legend><i class="fas fa-table"></i> {{Mes Actionneur}}</legend>
 		<?php
 		if (count($eqLogics) == 0) {
 			echo '<br/><div class="text-center" style="font-size:1.2em;font-weight:bold;">{{Aucun équipement Template n\'est paramétré, cliquer sur "Ajouter" pour commencer}}</div>';
@@ -71,6 +71,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 			<li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
 			<li role="presentation"><a href="#commandtab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li>
+			<li role="presentation"><a href="#actuatortab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Actionneur}}</a></li>
 		</ul>
 		<div class="tab-content">
 			<!-- Onglet de configuration de l'équipement -->
@@ -195,6 +196,27 @@ $eqLogics = eqLogic::byType($plugin->getId());
 					</table>
 				</div>
 			</div><!-- /.tabpanel #commandtab-->
+			<!-- Onglet des actionneurs de l'équipement -->
+			<div role="tabpanel" class="tab-pane" id="actuatortab">
+				<a class="btn btn-default btn-sm pull-right cmdAction" data-action="add" style="margin-top:5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une commande}}</a>
+				<br/><br/>
+				<div class="table-responsive">
+					<table id="table_actuator_cmd" class="table table-bordered table-condensed">
+						<thead>
+							<tr>
+								<th>{{Id}}</th>
+								<th>{{Nom}}</th>
+								<th>{{Type}}</th>
+								<th>{{Commande}}</th>
+								<th>{{Options}}</th>
+								<th>{{Action}}</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div><!-- /.tabpanel #actuatortab-->
 
 		</div><!-- /.tab-content -->
 	</div><!-- /.eqLogic -->

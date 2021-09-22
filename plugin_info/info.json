@@ -1,5 +1,5 @@
 {
-	"id" : "ColorTransition_Actuator",
+	"id" : "ColorTransition_actuator",
 	"name" : "ColorTransition Actionneur",
 	"description" : {
 		"fr_FR": "Permet de dérouler des transitions à partir du plugin ColorTransition sur des commandes"
@@ -18,23 +18,9 @@
 		"video" : "Lien vers une video"
 	},
 	"language": [
-		"fr_FR",
-		"en_US",
-		"es_ES",
-		"de_DE",
-		"ru_RU",
-		"id_ID",
-		"it_IT",
-		"ja_JP",
-		"pt_PT"
+		"fr_FR"
 	],
 	"compatibility": [
-		"miniplus",
-		"smart",
-		"rpi",
-		"docker",
-		"diy",
-		"mobile",
 		"v4",
 		"atlas"
 	]

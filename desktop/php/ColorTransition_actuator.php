@@ -71,7 +71,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 			<li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
 			<li role="presentation"><a href="#commandtab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li>
-			<li role="presentation"><a href="#actuatortab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Actionneur}}</a></li>
+			<li role="presentation"><a href="#actuatortab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-wrench"></i> {{Actionneur}}</a></li>
 		</ul>
 		<div class="tab-content">
 			<!-- Onglet de configuration de l'équipement -->
@@ -124,40 +124,62 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								</div>
 							</div>
 
-							<legend><i class="fas fa-cogs"></i> {{Paramètres spécifiques}}</legend>
+							<legend><i class="fas fa-cogs"></i> {{Equipement ColorTransition}}</legend>
 							<div class="form-group">
-								<label class="col-sm-3 control-label">{{Nom du paramètre n°1}}
-									<sup><i class="fas fa-question-circle tooltips" title="{{Renseignez le paramètre n°1 de l'équipement}}"></i></sup>
+								<label class="col-sm-3 control-label">{{selection du ColorTransition}}
+									<sup><i class="fas fa-question-circle tooltips" title="{{l'équipement ColorTransition <i>activé</i> qui servira au calculs}}"></i></sup>
 								</label>
 								<div class="col-sm-7">
-									<input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="param1" placeholder="{{Paramètre n°1}}"/>
+									<select id="sel_colortransition" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="ct_equip">
+										<?php
+										$options = '';
+										$CT_Obj=eqLogic::byType("ColorTransition");
+										foreach ($CT_Obj as $object) {
+											if($object->getIsEnable())$options .= '<option value="' . $object->getId() . '">' . $object->getHumanName(). '</option>';
+										}
+										echo $options;
+										?>
+									</select>
+								</div>
+							</div>
+							<legend><i class="fas fa-cogs"></i> {{Paramètres Transition}}</legend>
+							<div class="form-group">
+								<label class="col-sm-3 control-label"> {{Durée Move In}}
+									<sup><i class="fas fa-question-circle tooltips" title="{{durée en secondes}}"></i></sup>
+								</label>
+								<div class="col-sm-2">
+									<input type="number" class="eqLogicAttr form-control " data-l1key="configuration" data-l2key="dur_movein"/>
+								</div>
+								<div class="col-xs-2">
+									<span>{{secondes}}</span>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-3 control-label"> {{Mot de passe}}
-									<sup><i class="fas fa-question-circle tooltips" title="{{Renseignez le mot de passe}}"></i></sup>
+								<label class="col-sm-3 control-label"> {{Durée Move Out}}
+									<sup><i class="fas fa-question-circle tooltips" title="{{durée en secondes}}"></i></sup>
 								</label>
-								<div class="col-sm-7">
-									<input type="text" class="eqLogicAttr form-control inputPassword" data-l1key="configuration" data-l2key="password"/>
+								<div class="col-sm-2">
+									<input type="number" class="eqLogicAttr form-control " data-l1key="configuration" data-l2key="dur_moveout"/>
+								</div>
+								<div class="col-xs-2">
+									<span>{{secondes}}</span>
 								</div>
 							</div>
 							<!-- Champ de saisie du cron d'auto-actualisation + assistant cron -->
 							<!-- La fonction cron de la classe du plugin doit contenir le code prévu pour que ce champ soit fonctionnel -->
-							<div class="form-group">
-								<label class="col-sm-3 control-label">{{Auto-actualisation}}
-									<sup><i class="fas fa-question-circle tooltips" title="{{Fréquence de rafraîchissement de l'équipement}}"></i></sup>
+						<div class="form-group">
+								<label class="col-sm-3 control-label"> {{Intervalle de mise à jour}}
+									<sup><i class="fas fa-question-circle tooltips" title="{{durée en secondes}}"></i></sup>
 								</label>
-								<div class="col-sm-7">
-									<div class="input-group">
-										<input type="text" class="eqLogicAttr form-control roundedLeft" data-l1key="configuration" data-l2key="autorefresh" placeholder="{{Cliquer sur ? pour afficher l'assistant cron}}"/>
-										<span class="input-group-btn">
-											<a class="btn btn-default cursor jeeHelper roundedRight" data-helper="cron" title="Assistant cron">
-												<i class="fas fa-question-circle"></i>
-											</a>
-										</span>
-									</div>
+								<div class="col-sm-2">
+									<input type="number" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="dur_interval"/>
+								</div>
+								<div class="col-xs-2">
+									<span>{{secondes}}</span>
 								</div>
 							</div>
+							<!-- Champ de saisie du cron d'auto-actualisation + assistant cron -->
+							<!-- La fonction cron de la classe du plugin doit contenir le code prévu pour que ce champ soit fonctionnel -->
 						</div>
 
 						<!-- Partie droite de l'onglet "Équipement" -->
@@ -177,8 +199,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 
 			<!-- Onglet des commandes de l'équipement -->
 			<div role="tabpanel" class="tab-pane" id="commandtab">
-				<a class="btn btn-default btn-sm pull-right cmdAction" data-action="add" style="margin-top:5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une commande}}</a>
-				<br/><br/>
+				
 				<div class="table-responsive">
 					<table id="table_cmd" class="table table-bordered table-condensed">
 						<thead>
@@ -186,7 +207,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								<th>{{Id}}</th>
 								<th>{{Nom}}</th>
 								<th>{{Type}}</th>
-								<th>{{Paramètres}}</th>
+								<!-- <th>{{Paramètres}}</th> -->
 								<th>{{Options}}</th>
 								<th>{{Action}}</th>
 							</tr>
@@ -198,7 +219,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 			</div><!-- /.tabpanel #commandtab-->
 			<!-- Onglet des actionneurs de l'équipement -->
 			<div role="tabpanel" class="tab-pane" id="actuatortab">
-				<a class="btn btn-default btn-sm pull-right cmdAction" data-action="add" style="margin-top:5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une commande}}</a>
+				<a class="btn btn-default btn-sm pull-right cmdAction" data-action="add" style="margin-top:5px;"><i class="fas fa-plus-circle"></i> {{Ajouter un Actionneur}}</a>
 				<br/><br/>
 				<div class="table-responsive">
 					<table id="table_actuator_cmd" class="table table-bordered table-condensed">
@@ -208,7 +229,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								<th>{{Nom}}</th>
 								<th>{{Type}}</th>
 								<th>{{Commande}}</th>
+								<th>{{Destination}}</th>                                    
 								<th>{{Options}}</th>
+                                <th>{{Sortie}}</th>
 								<th>{{Action}}</th>
 							</tr>
 						</thead>
@@ -223,6 +246,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 </div><!-- /.row row-overflow -->
 
 <!-- Inclusion du fichier javascript du plugin (dossier, nom_du_fichier, extension_du_fichier, id_du_plugin) -->
-<?php include_file('desktop', 'template', 'js', 'template');?>
+<?php include_file('desktop', 'ColorTransition_actuator', 'js', 'ColorTransition_actuator');?>
 <!-- Inclusion du fichier javascript du core - NE PAS MODIFIER NI SUPPRIMER -->
 <?php include_file('core', 'plugin.template', 'js');?>

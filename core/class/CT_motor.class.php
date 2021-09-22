@@ -20,62 +20,109 @@
 require_once __DIR__  . '/../../../../core/php/core.inc.php';
 
 class CT_motor extends eqLogic {
-  
-  public $countLoop=0;
-  
-  private static $_instance = null;
-  private static $eq_array=Array();
-  private $on_air=false;
-  
-  
-      private function __construct() {  
-   }
+  private const CT_CACHE_NAME="COLOR_TRANSITION::";
+  private const CT_CACHE_ARRAY="serial_array";
 
-   public static function getInstance() {
- 
-     if(is_null(self::$_instance)) {
-       log::add('ColorTransition_actuator', 'info', '║ ║ ╟─── CT MOTOR CONSTRUCTION : ');
-       self::$_instance = new CT_motor();  
-     }
-     return self::$_instance;
-   }
-  public function addCTA(&$cta_tr){
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR ADD : '.$cta_tr->name);
-   if(in_array($cta_tr->name, self::$eq_array))return false;
-    $ctname=$cta_tr->name;
-    self::$eq_array[$ctname]=$cta_tr;
-    $cta_tr->start();
+  public static $countLoop=0;
+  
+  private function __construct() {  
+  }
+  //remove d'un élément par id
+  public static function removeCTA($id){
+    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR REMOVE '.$id);
+    $jcacheExist=cache::exist(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY);
+   
     
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR On AIr : '.$this->on_air);
-   	if(!$this->on_air)$this->startTime();
-    return true;
-  	
+    if(!$jcacheExist)return false;
+    $cacheJson=cache::byKey(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY)->getValue();
+    $cacheArr=json_decode($cacheJson,true);
+
+    //log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── old '.json_encode($cacheArr));
+    //log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── is id removable '.(in_array(strval($id), $cacheArr)?1:0));
+    //log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── test : '.(is_null($cacheArr[$id])?0:1));
+    if(!is_null($cacheArr[$id])){
+      unset($cacheArr[$id]);
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── new cache '.json_encode($cacheArr));
+      cache::set(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY, json_encode($cacheArr));      
+      return true;
+    }else{
+      return false;
+    }
+  }
+  // ajout d'un élément dans le cache
+  public static function addCTA($cta_tr){
+    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR ADD '.self::CT_CACHE_NAME.self::CT_CACHE_ARRAY);
+    $jcacheExist=cache::exist(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY);
+
+    
+    if($jcacheExist){
+      $cacheJson=cache::byKey(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY)->getValue();
+      $cacheArr=json_decode($cacheJson,true);
+    }else{
+      $cacheArr=Array();
+    }
+    $arrAdd=$cta_tr->getArray();
+    $keyName=strval($arrAdd['id']);
+    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR cta arra '.$keyName.' : '.json_encode($arrAdd));
+    
+    $cacheArr[$keyName]=$arrAdd;
+    cache::set(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY, json_encode($cacheArr));
+
+    // mise à l'index initial
+    $eq= eqLogic::byId($arrAdd['id']);
+    if(!is_object($eq)){
+      log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
+    }
+    $eq->refreshEquipementColor($arrAdd['move_index']); 
+
+    if(!$jcacheExist || count($cacheArr)==1)self::startTime();
   }
 
-  private function startTime(){
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK : '.$this->on_air);
-    $this->countLoop+=1;
-    $this->on_air = true;
+
+  /// le coeur du moteur
+  private static function startTime(){
+    self::$countLoop+=1;
+
+    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK '.self::$countLoop);
+    $jcacheExist=cache::exist(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY);
+    if(!$jcacheExist)return;
+    $cacheArr=json_decode(cache::byKey(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY)->getValue(),true);
+
+    $finalArray=array();
     
-   foreach(self::$eq_array as $cta_tr){
-     // vérif que pas demander l'arrêt
-     $eq= eqLogic::byId($cta_tr->id);
-     $onEq=$eq->getConfiguration('on_air');
-     log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─--------- info config : '.$onEq);
-      $on=$cta_tr->tick();
-      if(!$on || !$onEq){
-        log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------remove from motor : '.$cta_tr->name);
-        unset(self::$eq_array[$cta_tr->name]);
+   foreach($cacheArr as $id=>$cta_tr){
+    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR CTA : '.$id);
+     $cta_tr['curStep']+=1;
+
+      if ($cta_tr['curStep'] >= $cta_tr['dur_interval']){  // si on doit mettre à jour
+        $eq= eqLogic::byId($cta_tr['id']);
+        if(!is_object($eq)){
+          log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
+        }
+        $cta_tr['curStep']=0;
+        $cta_tr['move_index']+=$cta_tr['index_step'];
+        $eq->refreshEquipementColor($cta_tr['move_index']); 
+        
       }
-    }
-    if(count(self::$eq_array)>0 && $this->countLoop<100){
+      //log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ dur : '.$cta_tr['dur']);
+      $cta_tr['dur']-=1;
+      
+      if($cta_tr['dur']>0){
+        $finalArray[$id]=$cta_tr;
+      }
+   }
+   log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ cache array : '.json_encode($finalArray));
+     
+    if(count($finalArray)>0 && self::$countLoop<100){
+      cache::set(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY, json_encode($finalArray));
       sleep(1);
-      $this->startTime();
+      self::startTime();
     }else{
-      $this->on_air = false;
-      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------------------------   MOTOR END : '.$this->on_air);
-     $this->countLoop=0;
+      cache::delete(self::CT_CACHE_NAME.self::CT_CACHE_ARRAY);
+      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------------------------   MOTOR END : ');
+      self::$countLoop=0;
     }
+    
   }
   
 }

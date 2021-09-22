@@ -39,10 +39,10 @@ private $CT_equip = null; // l'quipement color transform, pour éviter le calcul
 private $colorArray = null; // l'array de couleur à soumettre à l'équipement ColorTransform, pour éviter le calcul à chaque itération
 private $bornes = null;
   
-private $ct_trans=null;
 
 //
 public function start_move($direction){
+   //cache::delete('COLOR_TRANSITION::serial_array');
    log::add('ColorTransition_actuator','debug', "║ ╔═══════════════════════ Start move / direction : ".$direction);
    $cmdA = $this->getCommandArray();
    // récup du tableau de couleurs de l'équipement CT
@@ -50,28 +50,21 @@ public function start_move($direction){
    $ct_eq=eqLogic::byId($ct_id);
    if(!is_object($ct_eq))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
   
-  	$this->ct_trans=new CT_transition();
-  	$this->ct_trans->refParams($this, $direction);
-  
+  	$ct_trans=new CT_transition();
+  	$ct_trans->refParams($this, $direction);
+
    $this->colorArray=$ct_eq->getColorsArray();
   
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── equipement CT : '.$ct_eq->getHumanName());
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── Couleurs : '.json_encode($this->colorArray));
       log::add('ColorTransition_actuator', 'debug', '║ ╚═════════════════════════════');
-
-  	$this->setConfiguration('on_air',true);
-  	$this->save();
   
-  	$motor=CT_motor::getInstance();
-   	$motor->addCTA($this->ct_trans);
-  	
-  	
+  	CT_motor::addCTA($ct_trans);  	
 }
   
  public function stopMove(){
    log::add('ColorTransition_actuator', 'debug', '║ STOP MOVE CALLED :');
-   $this->setConfiguration('on_air',false);
-   $this->save();
+   CT_motor::removeCTA(strval($this->getId()));
  }
 
   

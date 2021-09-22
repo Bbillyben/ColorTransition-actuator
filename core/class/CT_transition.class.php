@@ -22,90 +22,57 @@ require_once __DIR__  . '/../../../../core/php/core.inc.php';
 class CT_transition extends eqLogic {
   
   public $name=null;
-  public $id = 0;
-  private $dur_in=null;
-  private $dur_out=null;
-  private $dur = 0;
-  
-  private $dur_interval=null;
-  private $cur_index=null;
-  private $cur_target=null;
-  private $direction = 0;
-  
-  public $cta_eq = null;
-  
-  private $dur_step = 0;// la durée d'un step
-  private $curStep = 0;// pour le comptage du nombre de step
-  
-  private $index_step= 0;
-  
-  private $start_index = 0;
-  private $end_index = 0;
-  private $move_index = 0;// l'index en cours de mouvement
-  
-  private $on_duty=false;
+  public $serialArray=Array();
+
    function __construct()
     {
     }
   
   public function refParams(&$cta_eq, $direction){
-    $this->cta_eq=$cta_eq;
-    $this->id=$cta_eq->getId();
-    $this->name=$cta_eq->getHumanName();
-    $this->dur_in=$cta_eq->getConfiguration('dur_movein');
-    $this->dur_out=$cta_eq->getConfiguration('dur_moveout');
-    $this->dur_interval=$cta_eq->getConfiguration('dur_interval');
+    $this->serialArray['id']=$cta_eq->getId();
+    $this->serialArray['name']=$cta_eq->getHumanName();
+    $this->serialArray['dur_interval']=$cta_eq->getConfiguration('dur_interval');
+    
+    $dur_in=$cta_eq->getConfiguration('dur_movein');
+    $dur_out=$cta_eq->getConfiguration('dur_moveout');
+
+    
     
     $cmd=$cta_eq->getCmd(null,'curseurIndex');
    if(!is_object($cmd))throw new Exception(__('Commande index courant non trouvé', __FILE__));
-   $this->cur_index=$cmd->execCmd();
+   $cur_index=$cmd->execCmd();
     
     $cmd=$cta_eq->getCmd(null,'curseurTarget');
    if(!is_object($cmd))throw new Exception(__('Commande index cible non trouvé', __FILE__));
-   $this->cur_target=$cmd->execCmd();
+   $cur_target=$cmd->execCmd();
     
-    if($this->dur_out==0 || $this->dur_out==null)$this->dur_out=$this->dur_in;
+    if($dur_out==0 || $dur_out==null)$dur_out=$dur_in;
     
-    $this->direction=$direction;
     // calcul entre 2 interval
-    if($this->direction == 1){
-      $this->start_index = $this->cur_index;
-      $this->end_index= $this->cur_target;
+    if($direction == 1){
+      $start_index= $cur_index;
+      $end_index= $cur_target;
     }else{//move out on inverse curseur et target
-      $this->end_index= $this->cur_index;
-      $this->start_index= $this->cur_target;
+      $end_index= $cur_index;
+      $start_index= $cur_target;
     }
     
-    $this->dur=($this->dir=1)?$this->dur_in:$this->dur_out;// durée enb fonction de la direction
-	$this->dur_step=intval($this->dur/$this->dur_interval);
-    
-    $this->index_step=$this->direction*($this->cur_target-$this->cur_index)/$this->dur_step;
-    
-    log::add('ColorTransition_actuator', 'debug', '║ ╠════ Transition parameters :'.$cta_eq->getHumanName());
-    log::add('ColorTransition_actuator', 'debug', '║ ╠════ direction :'.$direction. ' | '.$this->direction);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── durée in : '.$this->dur_in);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── durée out : '.$this->dur_out);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── durée interval : '.$this->dur_interval);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── index courant : '.$this->cur_index);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── index cible : '.$this->cur_target);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── dur steps : '.$this->dur_step);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── index step : '.$this->index_step);
+    $this->serialArray['dur']=($direction=1)?$dur_in:$dur_out;// durée enb fonction de la direction
+	  $this->serialArray['dur_step']=intval($this->serialArray['dur']/$this->serialArray['dur_interval']);
+   
+    $this->serialArray['index_step']=($end_index-$start_index)/$this->serialArray['dur_step'];
+    $this->serialArray['move_index']=$start_index;
+    $this->serialArray['curStep']=0;
+ 
+    //log::add('ColorTransition_actuator', 'debug', '║ ╠════ Transition parameters :'.$cta_eq->getHumanName());
+    //log::add('ColorTransition_actuator', 'debug', '║ ╠════ array serialized :'.json_encode($this->serialArray));
     
   }
-  public function start(){
-    $this->move_index=$this->start_index;
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── transition start at index :'.$this->move_index);
-   $this->curStep=0;
-    
-    $this->cta_eq->refreshEquipementColor($this->move_index);
-    $this->on_duty=true;
-    
+  public function getArray(){
+    return $this->serialArray;
   }
-  public function stop(){
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── stop called from eq :');
-     $this->on_duty=false;
-  }
-  public function tick(){
+  
+  /*public function tick(){
     $this->curStep+=1;
     log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── [ : '.$this->name.' tick '. $this->dur.' | step curr :'.$this->curStep.' / '.$this->dur_interval.'   #on duty:'.$this->on_duty);
     
@@ -123,7 +90,7 @@ class CT_transition extends eqLogic {
       return false;
     }
     return true;
-  }
+  }*/
   
   
 

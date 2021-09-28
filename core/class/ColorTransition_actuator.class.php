@@ -59,18 +59,28 @@ public function start_move($direction){
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── Couleurs : '.json_encode($this->colorArray));
       log::add('ColorTransition_actuator', 'debug', '║ ╚═════════════════════════════');
   
-  	CT_motor::addCTA($ct_trans);  	
+  // for singleton test
+   //$ctMOTOR=&CT_motor::getInstance();
+   //ctMOTOR->addCTA($ct_trans);  	
+     
+     // for cache test / mem test
+     CT_motor::addCTA($ct_trans);
+  	
 }
   
  public function stopMove(){
    log::add('ColorTransition_actuator', 'debug', '║ STOP MOVE CALLED :');
-   CT_motor::removeCTA(strval($this->getId()));
+   // for singleton test
+   //$ctMOTOR=CT_motor::getInstance();
+   //$ctMOTOR->removeCTA(strval($this->getId()));
+   // for cache test / mem test
+   CT_motor::removeCTA($this->getId());
  }
 
   
 // set des equipement en fonc tion du curseur courant
   public function refreshEquipementColor($cursorIndex){
-    log::add('ColorTransition_actuator', 'debug', '║ ╠════ Update colors, index :'.$cursorIndex);
+    log::add('ColorTransition_actuator', 'debug', '║ ╠════ Update colors, index '.$this->getId().' :'.$cursorIndex);
     
     // vérif valorisation CT equipement
     if($this->CT_equip == null){
@@ -81,6 +91,7 @@ public function start_move($direction){
     // vérif des bornes
     if($this->bornes == null)$this->bornes=$this->CT_equip->getBornes();
     // calcul du %
+    $cursorIndex=min(max($cursorIndex,$this->bornes['min']),$this->bornes['max']);
     $cursPos=($cursorIndex-$this->bornes['min'])/($this->bornes['max']-$this->bornes['min']);
    // vérif color array défini
     if($this->colorArray==null)$this->colorArray=$this->CT_equip->getColorsArray();
@@ -106,7 +117,7 @@ public function start_move($direction){
           break;
       }
     }
-    //valorisation de l'nfo current color de l'équipement
+    //valorisation de l'info current color de l'équipement
     $ctCMD = $this->getCmd(null, 'currentColor');
     if (!is_object($ctCMD)) {
        log::add('ColorTransition_actuator', 'error', '### Couleur Courante non trouvée ');

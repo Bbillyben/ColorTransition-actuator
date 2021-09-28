@@ -20,9 +20,7 @@
 require_once __DIR__  . '/../../../../core/php/core.inc.php';
 
 class CT_transition extends eqLogic {
-  
-  public $name=null;
-  public $serialArray=Array();
+   public $serialArray=Array();
 
    function __construct()
     {
@@ -30,6 +28,7 @@ class CT_transition extends eqLogic {
   
   public function refParams(&$cta_eq, $direction){
     $this->serialArray['id']=$cta_eq->getId();
+    $this->serialArray['eqL']=$cta_eq;
     $this->serialArray['name']=$cta_eq->getHumanName();
     $this->serialArray['dur_interval']=$cta_eq->getConfiguration('dur_interval');
     
@@ -57,7 +56,7 @@ class CT_transition extends eqLogic {
       $start_index= $cur_target;
     }
     
-    $this->serialArray['dur']=($direction=1)?$dur_in:$dur_out;// durée enb fonction de la direction
+    $this->serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
 	  $this->serialArray['dur_step']=intval($this->serialArray['dur']/$this->serialArray['dur_interval']);
    
     $this->serialArray['index_step']=($end_index-$start_index)/$this->serialArray['dur_step'];
@@ -71,27 +70,6 @@ class CT_transition extends eqLogic {
   public function getArray(){
     return $this->serialArray;
   }
-  
-  /*public function tick(){
-    $this->curStep+=1;
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── [ : '.$this->name.' tick '. $this->dur.' | step curr :'.$this->curStep.' / '.$this->dur_interval.'   #on duty:'.$this->on_duty);
-    
-    if($this->on_duty == false)return false;// pour le remove du moteur
-    
-    if ($this->curStep >= $this->dur_interval){
-      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── update color');
-      $this->curStep=0;
-      $this->move_index+=$this->index_step;
-      $this->cta_eq->refreshEquipementColor($this->move_index);      
-    }
-    $this->dur-=1;
-    if($this->dur<=0){
-      $this->on_duty=false;
-      return false;
-    }
-    return true;
-  }*/
-  
   
 
 }

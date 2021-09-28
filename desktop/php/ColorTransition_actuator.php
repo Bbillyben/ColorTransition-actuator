@@ -127,7 +127,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							<legend><i class="fas fa-cogs"></i> {{Equipement ColorTransition}}</legend>
 							<div class="form-group">
 								<label class="col-sm-3 control-label">{{selection du ColorTransition}}
-									<sup><i class="fas fa-question-circle tooltips" title="{{l'équipement ColorTransition <i>activé</i> qui servira au calculs}}"></i></sup>
+									<sup><i class="fas fa-question-circle tooltips" title="{{l'équipement ColorTransition <i>activé</i> qui servira aux calculs}}"></i></sup>
 								</label>
 								<div class="col-sm-7">
 									<select id="sel_colortransition" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="ct_equip">

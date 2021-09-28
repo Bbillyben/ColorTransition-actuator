@@ -67,20 +67,20 @@ class CT_motor {
     }else{
     	$arr=Array();
     }
-    $arrAdd=$cta_tr->getArray();
-    $keyName=strval($arrAdd['id']);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR cta arra '.$keyName.' : '.json_encode($arrAdd));
+    //$arrAdd=$cta_tr->getArray();
+    $keyName=strval($cta_tr['id']);
+    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR cta arra '.$keyName.' : '.json_encode($cta_tr));
     
-   	$arr[$keyName]=$arrAdd;
+   	$arr[$keyName]=$cta_tr;
     $shx->put(self::SHM_KEY,$arr);
     log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR global arra '.$keyName.' | '.count($arr).' : '.json_encode( $shx->get(self::SHM_KEY)));
 
     // mise à l'index initial
-    $eq= eqLogic::byId($arrAdd['id']);
+    $eq= $cta_tr["eqL"];
     if(!is_object($eq)){
       log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
     }
-    $eq->refreshEquipementColor($arrAdd['move_index']); 
+    $eq->refreshEquipementColor($cta_tr['move_index']); 
 	 
     if(count($arr)==1){
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── #############" MOTOR ask for starting');

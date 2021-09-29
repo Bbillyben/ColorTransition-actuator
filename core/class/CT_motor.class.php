@@ -30,8 +30,6 @@ class CT_motor {
   public static function removeCTA($id){
     
     $shx= new shmSmart();
-    
-    
     if($shx->has(self::SHM_KEY)){
       $arr = $shx->get(self::SHM_KEY);
     }else{
@@ -54,7 +52,7 @@ class CT_motor {
       return false;
     }
   }
-  // ajout d'un élément dans le cache
+  // ajout d'un élément dans la mémoire réservée
   public static function addCTA($cta_tr){
     log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR ADD ');    
     $shx= new shmSmart();    
@@ -79,74 +77,9 @@ class CT_motor {
     $eq->refreshEquipementColor($cta_tr['move_index']); 
 	 
     if(count($arr)==1){
-      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── #############" MOTOR ask for starting');
-      self::$countLoop = 0;
-      sleep($cta_tr['dur_interval']);
-      self::startTime($cta_tr['dur_interval']);
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── ############# MOTOR ask for starting');
+      $output = shell_exec('/usr/bin/php '.__DIR__.'/../../ressources/CT_motor_tick.php '.$cta_tr['dur_interval'].' >/dev/null &');
     }
-  }
-
-
-  /// le coeur du moteur
-  private static function startTime($tickTime){
-     
-   self::$countLoop+=1;   
-    
-    $shx= new shmSmart();
-    
-    
-    if(!$shx->has(self::SHM_KEY)){
-      log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR time no shm ');
-      return false;
-    }
-
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK '.self::$countLoop);
-    
-    $arr = $shx->get(self::SHM_KEY);
-
-    $minTime = 150000;// un chiffre haut pour calculer le min
-   foreach($arr as $id=>$cta_tr){
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR CTA : '.$id);
-     $cta_tr['curStep']-=$tickTime;
-
-      if ($cta_tr['curStep'] <= 0 ){  // si on doit mettre à jour
-        $eq= $cta_tr['eqL']; //eqLogic::byId($cta_tr['id']);
-        if(!is_object($eq)){
-          log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
-        }
-        $cta_tr['curStep'] = $cta_tr['dur_interval'];// remise à l'initial du compteur
-        $cta_tr['move_index']+=$cta_tr['index_step'];
-        $eq->refreshEquipementColor($cta_tr['move_index']); 
-        
-      }
-      //log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ dur : '.$cta_tr['dur']);
-      $cta_tr['dur']-=$tickTime;
-
-      // gestion du temps minimum
-      $minTime=min($minTime,$cta_tr['dur'], $cta_tr['curStep']);
-      
-      if($cta_tr['dur']<=0){
-        unset($arr[$id]);
-      }else{
-      	$arr[$id]=$cta_tr;
-      }
-   }
-   log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ cache array : '.json_encode($arr));
-     
-    $shx->put(self::SHM_KEY,$arr);
-    
-    if(count($arr)>0 && self::$countLoop<30){
-      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ sleep time  : '.$minTime);
-      sleep($minTime);
-      self::startTime($minTime);
-    }else{
-      $shx->del(self::SHM_KEY); // delete key
-      $shx->remove();
-		unset($shx); // free memory in php..
-      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------------------------   MOTOR END : ');
-      self::$countLoop=0;
-    }
-    
   }
   
 }

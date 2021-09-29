@@ -176,7 +176,6 @@ public function getCommandArray(){
  private function get_transition_def($direction){
    $serialArray = array();
    $serialArray['id']=$this->getId();
-   $serialArray['eqL']=$this;
    //$serialArray['name']=$this->getHumanName();
    $serialArray['dur_interval']=$this->getConfiguration('dur_interval');
    
@@ -205,11 +204,13 @@ public function getCommandArray(){
    }
    
    $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
-    $serialArray['dur_step']=intval($serialArray['dur']/$serialArray['dur_interval']);
+   $serialArray['dur_step']=intval($serialArray['dur']/$serialArray['dur_interval']);
   
    $serialArray['index_step']=($end_index-$start_index)/$serialArray['dur_step'];
    $serialArray['move_index']=$start_index;
-   $serialArray['curStep']=0;
+   $serialArray['curStep']=$serialArray['dur_interval'];
+
+   $serialArray['eqL']=$this;
 
    return $serialArray;
 
@@ -453,7 +454,7 @@ class ColorTransition_actuatorCmd extends cmd {
          log::add('ColorTransition_actuator','debug', '╠════ Default call');
 
       } 
-      log::add('ColorTransition_actuator','debug', "╚═════════════════════════════════════════ END execute CMD ");
+      log::add('ColorTransition_actuator','debug', "╚═════════════════════════════════════════ END execute CMD ".$this->getHumanName());
 
 
         
@@ -476,3 +477,4 @@ class ColorTransition_actuatorCmd extends cmd {
 
     /*     * **********************Getteur Setteur*************************** */
 }
+?>

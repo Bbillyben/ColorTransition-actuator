@@ -30,8 +30,6 @@ class CT_motor {
   public static function removeCTA($id){
     
     $shx= new shmSmart();
-    
-    
     if($shx->has(self::SHM_KEY)){
       $arr = $shx->get(self::SHM_KEY);
     }else{
@@ -54,8 +52,9 @@ class CT_motor {
       return false;
     }
   }
-  // ajout d'un élément dans le cache
-  public static function addCTA($cta_tr){
+  // ajout d'un élément dans la mémoire réservée
+  public static function addCTA($eqL, $direction){
+    $cta_tr=self::get_transition_def($eqL, $direction);
     log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR ADD ');    
     $shx= new shmSmart();    
     if($shx->has(self::SHM_KEY)){
@@ -79,74 +78,82 @@ class CT_motor {
     $eq->refreshEquipementColor($cta_tr['move_index']); 
 	 
     if(count($arr)==1){
-      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── #############" MOTOR ask for starting');
-      self::$countLoop = 0;
-      sleep($cta_tr['dur_interval']);
-      self::startTime($cta_tr['dur_interval']);
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── ############# MOTOR ask for starting');
+      // temps max d'execution
+      $maxTime = config::byKey('CT_motor_maxtime', 'ColorTransition_actuator', 0);
+      if($maxTime==0)$maxTime=ColorTransition_actuator::MOTOR_MAX_TIME_DEFAULT;
+
+      $command = '/usr/bin/php '.__DIR__.'/../../ressources/CT_motor_tick.php '.$cta_tr['dur_interval'].' '.$maxTime;
+      $output = shell_exec($command.' >/dev/null &');
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR command :'.$command);
     }
   }
+  
+  // utilitaire : construction de l'array qui défini la transition dans le moteur
+   private function get_transition_def($eqL, $direction){
+     $serialArray = array();
+     $serialArray['id']=$eqL->getId();
+     $serialArray['dur_interval']=$eqL->getConfiguration('dur_interval');
+
+     $dur_in=$eqL->getConfiguration('dur_movein');
+     $dur_out=$eqL->getConfiguration('dur_moveout');
+
+    $ct_id=$eqL->getConfiguration('ct_equip');
+    $CT_equip=eqLogic::byId($ct_id);
+    if(!is_object($CT_equip))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
+    $bornes=$CT_equip->getBornes();
 
 
-  /// le coeur du moteur
-  private static function startTime($tickTime){
-     
-   self::$countLoop+=1;   
+     $cmd=$eqL->getCmd(null,'curseurIndex');
+    if(!is_object($cmd))throw new Exception(__('Commande index courant non trouvé', __FILE__));
+    $cur_index=$cmd->execCmd();
+
+     $cmd=$eqL->getCmd(null,'curseurTarget');
+    if(!is_object($cmd))throw new Exception(__('Commande index cible non trouvé', __FILE__));
+    $cur_target=$cmd->execCmd();
     
-    $shx= new shmSmart();
-    
-    
-    if(!$shx->has(self::SHM_KEY)){
-      log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR time no shm ');
-      return false;
-    }
-
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK '.self::$countLoop);
-    
-    $arr = $shx->get(self::SHM_KEY);
-
-    $minTime = 150000;// un chiffre haut pour calculer le min
-   foreach($arr as $id=>$cta_tr){
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR CTA : '.$id);
-     $cta_tr['curStep']-=$tickTime;
-
-      if ($cta_tr['curStep'] <= 0 ){  // si on doit mettre à jour
-        $eq= $cta_tr['eqL']; //eqLogic::byId($cta_tr['id']);
-        if(!is_object($eq)){
-          log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
-        }
-        $cta_tr['curStep'] = $cta_tr['dur_interval'];// remise à l'initial du compteur
-        $cta_tr['move_index']+=$cta_tr['index_step'];
-        $eq->refreshEquipementColor($cta_tr['move_index']); 
-        
-      }
-      //log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ dur : '.$cta_tr['dur']);
-      $cta_tr['dur']-=$tickTime;
-
-      // gestion du temps minimum
-      $minTime=min($minTime,$cta_tr['dur'], $cta_tr['curStep']);
-      
-      if($cta_tr['dur']<=0){
-        unset($arr[$id]);
+    if($cur_target==null){
+      if($direction>0){
+        $cur_target=$bornes['max'];
       }else{
-      	$arr[$id]=$cta_tr;
+        $cur_target=$bornes['min'];
+        $direction=1;
       }
-   }
-   log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ cache array : '.json_encode($arr));
-     
-    $shx->put(self::SHM_KEY,$arr);
-    
-    if(count($arr)>0 && self::$countLoop<30){
-      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ sleep time  : '.$minTime);
-      sleep($minTime);
-      self::startTime($minTime);
-    }else{
-      $shx->del(self::SHM_KEY); // delete key
-      $shx->remove();
-		unset($shx); // free memory in php..
-      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------------------------   MOTOR END : ');
-      self::$countLoop=0;
+      
     }
+
+     if($dur_out==0 || $dur_out==null)$dur_out=$dur_in;
+
+     // calcul entre 2 interval
+     if($direction == 1){
+       $start_index= $cur_index;
+       $end_index= $cur_target;
+     }else{//move out on inverse curseur et target
+       $end_index= $cur_index;
+       $start_index= $cur_target;
+     }
+
+     $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
+     $serialArray['dur_step']=ceil($serialArray['dur']/$serialArray['dur_interval']);
+
+     $serialArray['index_step']=round(($end_index-$start_index)/$serialArray['dur_step'], 3);
+     $serialArray['move_index']=$start_index;
+     $serialArray['curStep']=$serialArray['dur_interval'];
+
+     $serialArray['eqL']=$eqL;
+
+     
+
+     
+     $serialArray['CT_equip']=$CT_equip;
+     $serialArray['bornes']=$bornes;
+     $serialArray['colorArray']=$CT_equip->getColorsArray();
+
     
+
+
+     return $serialArray;
+
   }
   
 }

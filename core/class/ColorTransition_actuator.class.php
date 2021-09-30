@@ -33,11 +33,43 @@ class ColorTransition_actuator extends eqLogic {
       'move_out',
       'currentColor'
    );
-
-private $CT_equip = null; // l'quipement color transform, pour éviter le calcul à chaque itération
-private $colorArray = null; // l'array de couleur à soumettre à l'équipement ColorTransform, pour éviter le calcul à chaque itération
-private $bornes = null;
+const MOTOR_MAX_TIME_DEFAULT = 7200;// 2 heures
+const MOTOR_MIN_TIME_UPDATE_DEFAULT = 0.5;// 1/2 secondes
   
+//protected $CT_equip = null; // l'quipement color transform, pour éviter le calcul à chaque itération
+//protected $colorArray = null; // l'array de couleur à soumettre à l'équipement ColorTransform, pour éviter le calcul à chaque itération
+//protected $bornes = null;
+  
+  
+/* --------------------------  Fonctiond e cron pour check le process bien kill -------------------------------------- */
+ public static function cronDaily() {
+	log::add('ColorTransition_actuator', 'debug', '╔═══════════════════════ START CRON DAILY');
+   // get max time of execution
+   $maxTime = config::byKey('CT_motor_maxtime', __CLASS__, 0);
+   if($maxTime==0)$maxTime=self::MOTOR_MAX_TIME_DEFAULT;
+   log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR max execution time :'.$maxTime);
+   // vérification des pid sur le php
+	$pids = array();
+    $pid = exec("pgrep -f CT_motor_tick.php", $pids);
+    log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR PID :'.json_encode($pids).' | '.count($pids));
+   	if(count($pids)>1){// si il y a un moteur qui tourne
+      for($i=0; $i<count($pids)-1; $i++){
+        $execTime=intval(exec('ps -p '.$pids[$i].' -o etimes'));
+        log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR PID infos :'.$i.' | '.$pids[$i].' - exec time : '.$execTime);
+        if($execTime > $maxTime){
+          log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR KILL PID :'.$pids[$i]);
+        	//kill the process 
+          	 $output=exec('kill -9 '.$pids[$i]);
+          	// libération de la mémoire ocazou
+            $shx= new shmSmart();
+          	if($shx->has(CT_motor::SHM_KEY))$shx->del(CT_motor::SHM_KEY);
+            $shx->remove();
+            unset($shx);              
+        }
+      }
+    }
+	log::add('ColorTransition_actuator', 'debug', '╚═══════════════════════ END CRON ');
+  }
 
 //
 public function start_move($direction){
@@ -49,39 +81,50 @@ public function start_move($direction){
    $ct_eq=eqLogic::byId($ct_id);
    if(!is_object($ct_eq))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
   
-   $ct_trans = $this->get_transition_def($direction);
+   
    $this->colorArray=$ct_eq->getColorsArray();
   
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── equipement CT : '.$ct_eq->getHumanName());
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── Couleurs : '.json_encode($this->colorArray));
       log::add('ColorTransition_actuator', 'debug', '║ ╚═════════════════════════════');
-  
-     CT_motor::addCTA($ct_trans); 	
+  	
+     CT_motor::addCTA($this, $direction); 	
 }
   
  public function stopMove(){
    log::add('ColorTransition_actuator', 'debug', '║ STOP MOVE CALLED :');
    CT_motor::removeCTA($this->getId());
+   $this->endMove();
+ }
+ 
+ public function endMove(){
+  log::add('ColorTransition_actuator', 'debug', '║ END MOVE CALLED');
+  // mise à null de la cible
+  $ctCMD = $this->getCmd(null, 'curseurTarget');
+    if (is_object($ctCMD)) {
+      $ctCMD->event(null);
+    }
  }
 
   
 // set des equipement en fonc tion du curseur courant
-  public function refreshEquipementColor($cursorIndex){
+  public function refreshEquipementColor($cursorIndex, $CT_equip=null,$bornes=null, $colorArray=null ){
     log::add('ColorTransition_actuator', 'debug', '║ ╠════ Update colors, index '.$this->getId().' :'.$cursorIndex);
     
     // vérif valorisation CT equipement
-    if($this->CT_equip == null){
+    if($CT_equip == null){
+      log::add('ColorTransition_actuator', 'debug', '║ ╠════ ####################### CT Equip not found ');
       $ct_id=$this->getConfiguration('ct_equip');
-      $this->CT_equip=eqLogic::byId($ct_id);
-      if(!is_object($this->CT_equip))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
+      $CT_equip=eqLogic::byId($ct_id);
+      if(!is_object($CT_equip))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
     }
     // vérif des bornes
-    if($this->bornes == null)$this->bornes=$this->CT_equip->getBornes();
+    if($bornes == null)$bornes=$CT_equip->getBornes();
     // calcul du %
-    $cursorIndex=min(max($cursorIndex,$this->bornes['min']),$this->bornes['max']);
-    $cursPos=($cursorIndex-$this->bornes['min'])/($this->bornes['max']-$this->bornes['min']);
+    $cursorIndex=min(max($cursorIndex,$bornes['min']),$bornes['max']);
+    $cursPos=($cursorIndex-$bornes['min'])/($bornes['max']-$bornes['min']);
    // vérif color array défini
-    if($this->colorArray==null)$this->colorArray=$this->CT_equip->getColorsArray();
+    if($colorArray==null)$colorArray=$CT_equip->getColorsArray();
    
     
     // gestion des actionneurs
@@ -92,7 +135,7 @@ public function start_move($direction){
       //log::add('ColorTransition_actuator', 'debug', '║ ╟─── actuator : '.json_encode($actuator));
       $colorId=$actuator['color-format'].$actuator['use_alpha'].$actuator['use_white'];
       if(!in_array($colorId, $calculatedColors)){
-        $calculatedColors[$colorId] = $this->CT_equip->calculateColorFromIndex($cursPos, $this->colorArray,$actuator['use_alpha'],$actuator['use_white'],$actuator['color-format']);
+        $calculatedColors[$colorId] = $CT_equip->calculateColorFromIndex($cursPos, $colorArray,$actuator['use_alpha'],$actuator['use_white'],$actuator['color-format']);
       }
       $color = $calculatedColors[$colorId];
       switch($actuator['act_type']){
@@ -135,7 +178,8 @@ public function start_move($direction){
         break;
       case 'action':
         //log::add('ColorTransition_actuator', 'debug', '║ ╟─── color action on '.$actuator['dest'].' : '.$color);
-        $optionsSendCmd=array($actuator['dest']=>$color);
+        $optionsSendCmd=array('message'=>null, 'title'=>null, 'slider'=>null, 'color'=>null );
+        $optionsSendCmd[$actuator['dest']]=$color;
         $cmd->execCmd($optionsSendCmd);
         break;
       default:
@@ -157,7 +201,7 @@ public function start_move($direction){
     
   }
 // utilitaire 
-// construction de l'array des couleurs
+// construction de l'array des commandes
 public function getCommandArray(){
    $cmdA = Array();
    
@@ -172,49 +216,7 @@ public function getCommandArray(){
    
       return $cmdA;
  }
-// utilitaire : construction de l'array qui défini la transition dans le moteur
- private function get_transition_def($direction){
-   $serialArray = array();
-   $serialArray['id']=$this->getId();
-   //$serialArray['name']=$this->getHumanName();
-   $serialArray['dur_interval']=$this->getConfiguration('dur_interval');
-   
-   $dur_in=$this->getConfiguration('dur_movein');
-   $dur_out=$this->getConfiguration('dur_moveout');
 
-   
-   
-   $cmd=$this->getCmd(null,'curseurIndex');
-  if(!is_object($cmd))throw new Exception(__('Commande index courant non trouvé', __FILE__));
-  $cur_index=$cmd->execCmd();
-   
-   $cmd=$this->getCmd(null,'curseurTarget');
-  if(!is_object($cmd))throw new Exception(__('Commande index cible non trouvé', __FILE__));
-  $cur_target=$cmd->execCmd();
-   
-   if($dur_out==0 || $dur_out==null)$dur_out=$dur_in;
-   
-   // calcul entre 2 interval
-   if($direction == 1){
-     $start_index= $cur_index;
-     $end_index= $cur_target;
-   }else{//move out on inverse curseur et target
-     $end_index= $cur_index;
-     $start_index= $cur_target;
-   }
-   
-   $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
-   $serialArray['dur_step']=intval($serialArray['dur']/$serialArray['dur_interval']);
-  
-   $serialArray['index_step']=($end_index-$start_index)/$serialArray['dur_step'];
-   $serialArray['move_index']=$start_index;
-   $serialArray['curStep']=$serialArray['dur_interval'];
-
-   $serialArray['eqL']=$this;
-
-   return $serialArray;
-
-}
     /*     * *********************Méthodes d'instance************************* */
     
  // Fonction exécutée automatiquement avant la création de l'équipement 
@@ -228,14 +230,31 @@ public function getCommandArray(){
     }
 
  // Fonction exécutée automatiquement avant la mise à jour de l'équipement 
-    public function preUpdate() {
-        
+    public function preUpdate() {   
+      // vérification avvant sauvegarde
+        // le min de mise à jour des transition
+        $value=$this->getConfiguration('dur_interval');
+        $minTime = config::byKey('CT_motor_minupdate', __CLASS__, 0);
+        if($minTime==0)$minTime=self::MOTOR_MIN_TIME_UPDATE_DEFAULT;
+        if($minTime>$value)throw new Exception(__('La valeur de temps de mise à jour doit être supérieur à :', __FILE__).$minTime);
+      
+      // la durée de move in
+      
+      $value=$this->getConfiguration('dur_movein');
+      if(empty($value) || $value = "" || $value < 0)throw new Exception(__('La valeur de Durée Move In ne peut pas être vide', __FILE__));
+      
+      // le ct_equip
+      $value=$this->getConfiguration('ct_equip');
+      if(empty($value) || $value = "" || $value < 0)throw new Exception(__('Vous devez sélectionner un équipement ColorTrnasition', __FILE__));
+      
+      
     }
 
  // Fonction exécutée automatiquement après la mise à jour de l'équipement 
     public function postUpdate() {
         
     }
+ 
 
  // Fonction exécutée automatiquement avant la sauvegarde (création ou mise à jour) de l'équipement 
     public function preSave() {
@@ -250,6 +269,8 @@ public function getCommandArray(){
           
         }
       }
+      
+      
         
     }
 
@@ -259,9 +280,15 @@ public function getCommandArray(){
       // récup du tableau de couleurs de l'équipement CT
       $ct_id=$this->getConfiguration('ct_equip');
       $ct_eq=eqLogic::byId($ct_id);
-      if(!is_object($ct_eq))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
-      $this->bornes=$ct_eq->getBornes();
-      log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($this->bornes)); 
+      if(!is_object($ct_eq)){
+        if(!is_null($ct_id) && $ct_id!="" && $ct_id >0 ){
+        	throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
+        }
+      }else{
+        $this->bornes=$ct_eq->getBornes();
+      	log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($this->bornes)); 
+      
+      }
       
       
       // commande info de la valeur de la couleur

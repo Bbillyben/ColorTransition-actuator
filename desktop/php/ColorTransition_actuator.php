@@ -2,6 +2,13 @@
 if (!isConnect('admin')) {
 	throw new Exception('{{401 - Accès non autorisé}}');
 }
+
+try {
+    $CTplugin = plugin::byId('ColorTransition');
+}catch(Exception $e){
+   throw new Exception('{{Le plugin <b>ColorTransition</b> doit être installé pour utiliser le plugin ColorTransition_actuator}}');
+}
+
 // Déclaration des variables obligatoires
 $plugin = plugin::byId('ColorTransition_actuator');
 sendVarToJS('eqType', $plugin->getId());

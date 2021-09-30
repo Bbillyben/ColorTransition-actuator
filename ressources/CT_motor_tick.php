@@ -26,8 +26,8 @@ $countLoop = 0;
 log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR TICK CALL :'.$argv[1]);
 
   /// le coeur du moteur  
-function CT_motor_startTime($tickTime, $countLoop){
-   $countLoop+=1;   
+function CT_motor_startTime($tickTime, $countLoop, $maxIteration){
+   $countLoop+=$tickTime;   
     
     $shx= new shmSmart();
     
@@ -37,15 +37,15 @@ function CT_motor_startTime($tickTime, $countLoop){
       return false;
     }
 
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK '.$countLoop.' | '.microtime(true));
+    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK '.$countLoop.' | '.microtime(true).' / max time : '.$maxIteration);
     
     $arr = $shx->get(CT_motor::SHM_KEY);
 
-    $minTime = 150000;// un chiffre haut pour calculer le min
+    $minTime = INF;// un chiffre haut pour calculer le min
    foreach($arr as $id=>$cta_tr){
-    log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR CTA : '.$id);
-     $cta_tr['curStep']=round($cta_tr['curStep']-$tickTime, 3);
-	 $cta_tr['dur']=round($cta_tr['dur']-$tickTime, 3);
+      log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR CTA : '.$id);
+      $cta_tr['curStep']=round($cta_tr['curStep']-$tickTime, 3);
+      $cta_tr['dur']=round($cta_tr['dur']-$tickTime, 3);
       if ($cta_tr['curStep'] <= 0 ||  $cta_tr['dur']<=0){  // si on doit mettre à jour
         $eq= $cta_tr['eqL'];
         if(!is_object($eq)){
@@ -53,7 +53,7 @@ function CT_motor_startTime($tickTime, $countLoop){
         }
         $cta_tr['curStep'] = $cta_tr['dur_interval'];// remise à l'initial du compteur
         $cta_tr['move_index']=round($cta_tr['move_index']+$cta_tr['index_step'], 3);
-        $eq->refreshEquipementColor($cta_tr['move_index']); 
+        $eq->refreshEquipementColor($cta_tr['move_index'],$cta_tr['CT_equip'],$cta_tr['bornes'], $cta_tr['colorArray']); 
         log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR new index : '.$cta_tr['move_index']);
         
       }
@@ -63,6 +63,7 @@ function CT_motor_startTime($tickTime, $countLoop){
       $minTime=min($minTime,$cta_tr['dur'], $cta_tr['curStep']);
       
       if($cta_tr['dur']<=0.0001){
+        $cta_tr['eqL']->endMove();
         unset($arr[$id]);
       }else{
       	$arr[$id]=$cta_tr;
@@ -79,17 +80,17 @@ function CT_motor_startTime($tickTime, $countLoop){
     unset($eq);
     
     //log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK End  | '.microtime(true));
-    if(count($arr)>0 && $countLoop<3600){
+    if(count($arr)>0 && $countLoop<$maxIteration){
       unset($arr);
       unset($shx); // ----> fuite de mémoire ici!
       if($minTime >=1){
         log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─ sleep time  : '.intval($minTime));
         sleep(intval($minTime));
-        CT_motor_startTime(intval($minTime), $countLoop);
+        CT_motor_startTime(intval($minTime), $countLoop, $maxIteration);
       }else{
         log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─ sleep time  : '.($minTime));
         usleep($minTime*1000000);
-        CT_motor_startTime($minTime, $countLoop);
+        CT_motor_startTime($minTime, $countLoop,$maxIteration);
       }
       
     }else{
@@ -106,10 +107,10 @@ function CT_motor_startTime($tickTime, $countLoop){
 // premier lancement du moteur
   if($argv[1] >=1){
     sleep(intval($argv[1]));
-    CT_motor_startTime(intval($argv[1]), $countLoop);
+    CT_motor_startTime(intval($argv[1]), $countLoop, $argv[2]);
   }else{
     usleep($argv[1]*1000000);
-    CT_motor_startTime($argv[1], $countLoop);
+    CT_motor_startTime($argv[1], $countLoop, $argv[2]);
   }
 
 

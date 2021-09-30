@@ -22,35 +22,29 @@ if (!isConnect()) {
   die();
 }
 ?>
-<!-- <form class="form-horizontal">
+<form class="form-horizontal">
   <fieldset>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Global param 1}}
-        <sup><i class="fas fa-question-circle tooltips" title="{{Renseignez le paramètre 1 du plugin}}"></i></sup>
+      <label class="col-md-4 control-label">{{Temps Maximum d'exécution du moteur}}
+        <sup><i class="fas fa-question-circle tooltips" title="{{par défaut 7 200 secondes}}"></i></sup>
       </label>
-      <div class="col-md-4">
-        <input class="configKey form-control" data-l1key="param1"/>
+      <div class="col-lg-1">
+        <input type="number" class="configKey form-control" data-l1key="CT_motor_maxtime" placeholder="7200"/>
+      </div>
+      <div class="col-xs-2">
+        <span> {{secondes}}</span>
       </div>
     </div>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Global param 2}}
-        <sup><i class="fas fa-question-circle tooltips" title="{{Renseignez le paramètre 2 du plugin}}"></i></sup>
+      <label class="col-md-4 control-label">{{Temps minimum de mise à jour de la transition}}
+        <sup><i class="fas fa-question-circle tooltips" title="{{un temps trop court ralentira tout le process}}"></i></sup>
       </label>
-      <div class="col-md-4">
-        <input class="configKey form-control" data-l1key="param2"/>
+      <div class="col-lg-1">
+        <input class="configKey form-control" data-l1key="CT_motor_minupdate" placeholder="0.5"/>
       </div>
-    </div>
-    <div class="form-group">
-      <label class="col-md-4 control-label">{{Global param 3}}
-        <sup><i class="fas fa-question-circle tooltips" title="{{Sélectionnez du paramètre 3 du plugin}}"></i></sup>
-      </label>
-      <div class="col-md-4">
-        <select class="configKey form-control" data-l1key="param3">
-          <option value=""></option>
-          <option value="value1">value1</option>
-          <option value="value2">value2</option>
-        </select>
+      <div class="col-xs-2">
+        <span> {{secondes}}</span>
       </div>
     </div>
   </fieldset>
-</form> -->
+</form>

@@ -79,7 +79,11 @@ class CT_motor {
 	 
     if(count($arr)==1){
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── ############# MOTOR ask for starting');
-      $command = '/usr/bin/php '.__DIR__.'/../../ressources/CT_motor_tick.php '.$cta_tr['dur_interval'];
+      // temps max d'execution
+      $maxTime = config::byKey('CT_motor_maxtime', 'ColorTransition_actuator', 0);
+      if($maxTime==0)$maxTime=ColorTransition_actuator::MOTOR_MAX_TIME_DEFAULT;
+
+      $command = '/usr/bin/php '.__DIR__.'/../../ressources/CT_motor_tick.php '.$cta_tr['dur_interval'].' '.$maxTime;
       $output = shell_exec($command.' >/dev/null &');
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR command :'.$command);
     }
@@ -94,6 +98,10 @@ class CT_motor {
      $dur_in=$eqL->getConfiguration('dur_movein');
      $dur_out=$eqL->getConfiguration('dur_moveout');
 
+    $ct_id=$eqL->getConfiguration('ct_equip');
+    $CT_equip=eqLogic::byId($ct_id);
+    if(!is_object($CT_equip))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
+    $bornes=$CT_equip->getBornes();
 
 
      $cmd=$eqL->getCmd(null,'curseurIndex');
@@ -103,6 +111,16 @@ class CT_motor {
      $cmd=$eqL->getCmd(null,'curseurTarget');
     if(!is_object($cmd))throw new Exception(__('Commande index cible non trouvé', __FILE__));
     $cur_target=$cmd->execCmd();
+    
+    if($cur_target==null){
+      if($direction>0){
+        $cur_target=$bornes['max'];
+      }else{
+        $cur_target=$bornes['min'];
+        $direction=1;
+      }
+      
+    }
 
      if($dur_out==0 || $dur_out==null)$dur_out=$dur_in;
 
@@ -123,6 +141,16 @@ class CT_motor {
      $serialArray['curStep']=$serialArray['dur_interval'];
 
      $serialArray['eqL']=$eqL;
+
+     
+
+     
+     $serialArray['CT_equip']=$CT_equip;
+     $serialArray['bornes']=$bornes;
+     $serialArray['colorArray']=$CT_equip->getColorsArray();
+
+    
+
 
      return $serialArray;
 

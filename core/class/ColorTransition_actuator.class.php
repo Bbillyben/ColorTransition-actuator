@@ -34,10 +34,11 @@ class ColorTransition_actuator extends eqLogic {
       'currentColor'
    );
 const MOTOR_MAX_TIME_DEFAULT = 7200;// 2 heures
-
-private $CT_equip = null; // l'quipement color transform, pour éviter le calcul à chaque itération
-private $colorArray = null; // l'array de couleur à soumettre à l'équipement ColorTransform, pour éviter le calcul à chaque itération
-private $bornes = null;
+const MOTOR_MIN_TIME_UPDATE_DEFAULT = 0.5;// 1/2 secondes
+  
+//protected $CT_equip = null; // l'quipement color transform, pour éviter le calcul à chaque itération
+//protected $colorArray = null; // l'array de couleur à soumettre à l'équipement ColorTransform, pour éviter le calcul à chaque itération
+//protected $bornes = null;
   
   
 /* --------------------------  Fonctiond e cron pour check le process bien kill -------------------------------------- */
@@ -93,26 +94,37 @@ public function start_move($direction){
  public function stopMove(){
    log::add('ColorTransition_actuator', 'debug', '║ STOP MOVE CALLED :');
    CT_motor::removeCTA($this->getId());
+   $this->endMove();
+ }
+ 
+ public function endMove(){
+  log::add('ColorTransition_actuator', 'debug', '║ END MOVE CALLED');
+  // mise à null de la cible
+  $ctCMD = $this->getCmd(null, 'curseurTarget');
+    if (is_object($ctCMD)) {
+      $ctCMD->event(null);
+    }
  }
 
   
 // set des equipement en fonc tion du curseur courant
-  public function refreshEquipementColor($cursorIndex){
+  public function refreshEquipementColor($cursorIndex, $CT_equip=null,$bornes=null, $colorArray=null ){
     log::add('ColorTransition_actuator', 'debug', '║ ╠════ Update colors, index '.$this->getId().' :'.$cursorIndex);
     
     // vérif valorisation CT equipement
-    if($this->CT_equip == null){
+    if($CT_equip == null){
+      log::add('ColorTransition_actuator', 'debug', '║ ╠════ ####################### CT Equip not found ');
       $ct_id=$this->getConfiguration('ct_equip');
-      $this->CT_equip=eqLogic::byId($ct_id);
-      if(!is_object($this->CT_equip))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
+      $CT_equip=eqLogic::byId($ct_id);
+      if(!is_object($CT_equip))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
     }
     // vérif des bornes
-    if($this->bornes == null)$this->bornes=$this->CT_equip->getBornes();
+    if($bornes == null)$bornes=$CT_equip->getBornes();
     // calcul du %
-    $cursorIndex=min(max($cursorIndex,$this->bornes['min']),$this->bornes['max']);
-    $cursPos=($cursorIndex-$this->bornes['min'])/($this->bornes['max']-$this->bornes['min']);
+    $cursorIndex=min(max($cursorIndex,$bornes['min']),$bornes['max']);
+    $cursPos=($cursorIndex-$bornes['min'])/($bornes['max']-$bornes['min']);
    // vérif color array défini
-    if($this->colorArray==null)$this->colorArray=$this->CT_equip->getColorsArray();
+    if($colorArray==null)$colorArray=$CT_equip->getColorsArray();
    
     
     // gestion des actionneurs
@@ -123,7 +135,7 @@ public function start_move($direction){
       //log::add('ColorTransition_actuator', 'debug', '║ ╟─── actuator : '.json_encode($actuator));
       $colorId=$actuator['color-format'].$actuator['use_alpha'].$actuator['use_white'];
       if(!in_array($colorId, $calculatedColors)){
-        $calculatedColors[$colorId] = $this->CT_equip->calculateColorFromIndex($cursPos, $this->colorArray,$actuator['use_alpha'],$actuator['use_white'],$actuator['color-format']);
+        $calculatedColors[$colorId] = $CT_equip->calculateColorFromIndex($cursPos, $colorArray,$actuator['use_alpha'],$actuator['use_white'],$actuator['color-format']);
       }
       $color = $calculatedColors[$colorId];
       switch($actuator['act_type']){
@@ -218,14 +230,31 @@ public function getCommandArray(){
     }
 
  // Fonction exécutée automatiquement avant la mise à jour de l'équipement 
-    public function preUpdate() {
-        
+    public function preUpdate() {   
+      // vérification avvant sauvegarde
+        // le min de mise à jour des transition
+        $value=$this->getConfiguration('dur_interval');
+        $minTime = config::byKey('CT_motor_minupdate', __CLASS__, 0);
+        if($minTime==0)$minTime=self::MOTOR_MIN_TIME_UPDATE_DEFAULT;
+        if($minTime>$value)throw new Exception(__('La valeur de temps de mise à jour doit être supérieur à :', __FILE__).$minTime);
+      
+      // la durée de move in
+      
+      $value=$this->getConfiguration('dur_movein');
+      if(empty($value) || $value = "" || $value < 0)throw new Exception(__('La valeur de Durée Move In ne peut pas être vide', __FILE__));
+      
+      // le ct_equip
+      $value=$this->getConfiguration('ct_equip');
+      if(empty($value) || $value = "" || $value < 0)throw new Exception(__('Vous devez sélectionner un équipement ColorTrnasition', __FILE__));
+      
+      
     }
 
  // Fonction exécutée automatiquement après la mise à jour de l'équipement 
     public function postUpdate() {
         
     }
+ 
 
  // Fonction exécutée automatiquement avant la sauvegarde (création ou mise à jour) de l'équipement 
     public function preSave() {
@@ -240,6 +269,8 @@ public function getCommandArray(){
           
         }
       }
+      
+      
         
     }
 
@@ -249,9 +280,15 @@ public function getCommandArray(){
       // récup du tableau de couleurs de l'équipement CT
       $ct_id=$this->getConfiguration('ct_equip');
       $ct_eq=eqLogic::byId($ct_id);
-      if(!is_object($ct_eq))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
-      $this->bornes=$ct_eq->getBornes();
-      log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($this->bornes)); 
+      if(!is_object($ct_eq)){
+        if(!is_null($ct_id) && $ct_id!="" && $ct_id >0 ){
+        	throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
+        }
+      }else{
+        $this->bornes=$ct_eq->getBornes();
+      	log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($this->bornes)); 
+      
+      }
       
       
       // commande info de la valeur de la couleur

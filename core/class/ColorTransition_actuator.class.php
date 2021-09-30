@@ -135,7 +135,8 @@ public function start_move($direction){
         break;
       case 'action':
         //log::add('ColorTransition_actuator', 'debug', '║ ╟─── color action on '.$actuator['dest'].' : '.$color);
-        $optionsSendCmd=array($actuator['dest']=>$color);
+        $optionsSendCmd=array('message'=>null, 'title'=>null, 'slider'=>null, 'color'=>null );
+        $optionsSendCmd[$actuator['dest']]=$color;
         $cmd->execCmd($optionsSendCmd);
         break;
       default:

@@ -45,8 +45,8 @@ function CT_motor_startTime($tickTime, $countLoop){
    foreach($arr as $id=>$cta_tr){
     log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR CTA : '.$id);
      $cta_tr['curStep']-=$tickTime;
-
-      if ($cta_tr['curStep'] <= 0 ){  // si on doit mettre à jour
+	 $cta_tr['dur']-=$tickTime;
+      if ($cta_tr['curStep'] <= 0 ||  $cta_tr['dur']<=0){  // si on doit mettre à jour
         $eq= $cta_tr['eqL'];
         if(!is_object($eq)){
           log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
@@ -58,12 +58,11 @@ function CT_motor_startTime($tickTime, $countLoop){
         
       }
       //log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ dur : '.$cta_tr['dur']);
-      $cta_tr['dur']-=$tickTime;
 
       // gestion du temps minimum
       $minTime=min($minTime,$cta_tr['dur'], $cta_tr['curStep']);
       
-      if($cta_tr['dur']<=0){
+      if($cta_tr['dur']<=0.0001){
         unset($arr[$id]);
       }else{
       	$arr[$id]=$cta_tr;

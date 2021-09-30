@@ -116,7 +116,7 @@ class CT_motor {
      $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
      $serialArray['dur_step']=ceil($serialArray['dur']/$serialArray['dur_interval']);
 
-     $serialArray['index_step']=($end_index-$start_index)/$serialArray['dur_step'];
+     $serialArray['index_step']=round(($end_index-$start_index)/$serialArray['dur_step'], 3);
      $serialArray['move_index']=$start_index;
      $serialArray['curStep']=$serialArray['dur_interval'];
 

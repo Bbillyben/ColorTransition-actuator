@@ -44,15 +44,15 @@ function CT_motor_startTime($tickTime, $countLoop){
     $minTime = 150000;// un chiffre haut pour calculer le min
    foreach($arr as $id=>$cta_tr){
     log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR CTA : '.$id);
-     $cta_tr['curStep']-=$tickTime;
-	 $cta_tr['dur']-=$tickTime;
+     $cta_tr['curStep']=round($cta_tr['curStep']-$tickTime, 3);
+	 $cta_tr['dur']=round($cta_tr['dur']-$tickTime, 3);
       if ($cta_tr['curStep'] <= 0 ||  $cta_tr['dur']<=0){  // si on doit mettre à jour
         $eq= $cta_tr['eqL'];
         if(!is_object($eq)){
           log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
         }
         $cta_tr['curStep'] = $cta_tr['dur_interval'];// remise à l'initial du compteur
-        $cta_tr['move_index']+=$cta_tr['index_step'];
+        $cta_tr['move_index']=round($cta_tr['move_index']+$cta_tr['index_step'], 3);
         $eq->refreshEquipementColor($cta_tr['move_index']); 
         log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR new index : '.$cta_tr['move_index']);
         
@@ -87,12 +87,14 @@ function CT_motor_startTime($tickTime, $countLoop){
     }else{
       $shx->del(CT_motor::SHM_KEY); // delete key
       $shx->remove();
-		  unset($shx); // free memory in php..
+      unset($shx); // free memory in php..
       log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------------------------   MOTOR END : ');
       $countLoop=0;
     }
     
   }
+
+// premier lancement du moteur
   if($argv[1] >=1){
     sleep(intval($argv[1]));
     CT_motor_startTime(intval($argv[1]), $countLoop);

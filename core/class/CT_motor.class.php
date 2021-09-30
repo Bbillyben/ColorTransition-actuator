@@ -53,7 +53,8 @@ class CT_motor {
     }
   }
   // ajout d'un élément dans la mémoire réservée
-  public static function addCTA($cta_tr){
+  public static function addCTA($eqL, $direction){
+    $cta_tr=self::get_transition_def($eqL, $direction);
     log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR ADD ');    
     $shx= new shmSmart();    
     if($shx->has(self::SHM_KEY)){
@@ -80,6 +81,49 @@ class CT_motor {
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── ############# MOTOR ask for starting');
       $output = shell_exec('/usr/bin/php '.__DIR__.'/../../ressources/CT_motor_tick.php '.$cta_tr['dur_interval'].' >/dev/null &');
     }
+  }
+  
+  // utilitaire : construction de l'array qui défini la transition dans le moteur
+   private function get_transition_def($eqL, $direction){
+     $serialArray = array();
+     $serialArray['id']=$eqL->getId();
+     $serialArray['dur_interval']=$eqL->getConfiguration('dur_interval');
+
+     $dur_in=$eqL->getConfiguration('dur_movein');
+     $dur_out=$eqL->getConfiguration('dur_moveout');
+
+
+
+     $cmd=$eqL->getCmd(null,'curseurIndex');
+    if(!is_object($cmd))throw new Exception(__('Commande index courant non trouvé', __FILE__));
+    $cur_index=$cmd->execCmd();
+
+     $cmd=$eqL->getCmd(null,'curseurTarget');
+    if(!is_object($cmd))throw new Exception(__('Commande index cible non trouvé', __FILE__));
+    $cur_target=$cmd->execCmd();
+
+     if($dur_out==0 || $dur_out==null)$dur_out=$dur_in;
+
+     // calcul entre 2 interval
+     if($direction == 1){
+       $start_index= $cur_index;
+       $end_index= $cur_target;
+     }else{//move out on inverse curseur et target
+       $end_index= $cur_index;
+       $start_index= $cur_target;
+     }
+
+     $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
+     $serialArray['dur_step']=intval($serialArray['dur']/$serialArray['dur_interval']);
+
+     $serialArray['index_step']=($end_index-$start_index)/$serialArray['dur_step'];
+     $serialArray['move_index']=$start_index;
+     $serialArray['curStep']=$serialArray['dur_interval'];
+
+     $serialArray['eqL']=$eqL;
+
+     return $serialArray;
+
   }
   
 }

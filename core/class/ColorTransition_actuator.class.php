@@ -49,14 +49,14 @@ public function start_move($direction){
    $ct_eq=eqLogic::byId($ct_id);
    if(!is_object($ct_eq))throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
   
-   $ct_trans = $this->get_transition_def($direction);
+   
    $this->colorArray=$ct_eq->getColorsArray();
   
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── equipement CT : '.$ct_eq->getHumanName());
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── Couleurs : '.json_encode($this->colorArray));
       log::add('ColorTransition_actuator', 'debug', '║ ╚═════════════════════════════');
-  
-     CT_motor::addCTA($ct_trans); 	
+  	
+     CT_motor::addCTA($this, $direction); 	
 }
   
  public function stopMove(){
@@ -158,7 +158,7 @@ public function start_move($direction){
     
   }
 // utilitaire 
-// construction de l'array des couleurs
+// construction de l'array des commandes
 public function getCommandArray(){
    $cmdA = Array();
    
@@ -173,49 +173,7 @@ public function getCommandArray(){
    
       return $cmdA;
  }
-// utilitaire : construction de l'array qui défini la transition dans le moteur
- private function get_transition_def($direction){
-   $serialArray = array();
-   $serialArray['id']=$this->getId();
-   //$serialArray['name']=$this->getHumanName();
-   $serialArray['dur_interval']=$this->getConfiguration('dur_interval');
-   
-   $dur_in=$this->getConfiguration('dur_movein');
-   $dur_out=$this->getConfiguration('dur_moveout');
 
-   
-   
-   $cmd=$this->getCmd(null,'curseurIndex');
-  if(!is_object($cmd))throw new Exception(__('Commande index courant non trouvé', __FILE__));
-  $cur_index=$cmd->execCmd();
-   
-   $cmd=$this->getCmd(null,'curseurTarget');
-  if(!is_object($cmd))throw new Exception(__('Commande index cible non trouvé', __FILE__));
-  $cur_target=$cmd->execCmd();
-   
-   if($dur_out==0 || $dur_out==null)$dur_out=$dur_in;
-   
-   // calcul entre 2 interval
-   if($direction == 1){
-     $start_index= $cur_index;
-     $end_index= $cur_target;
-   }else{//move out on inverse curseur et target
-     $end_index= $cur_index;
-     $start_index= $cur_target;
-   }
-   
-   $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
-   $serialArray['dur_step']=intval($serialArray['dur']/$serialArray['dur_interval']);
-  
-   $serialArray['index_step']=($end_index-$start_index)/$serialArray['dur_step'];
-   $serialArray['move_index']=$start_index;
-   $serialArray['curStep']=$serialArray['dur_interval'];
-
-   $serialArray['eqL']=$this;
-
-   return $serialArray;
-
-}
     /*     * *********************Méthodes d'instance************************* */
     
  // Fonction exécutée automatiquement avant la création de l'équipement 

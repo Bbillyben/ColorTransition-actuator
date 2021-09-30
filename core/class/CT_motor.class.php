@@ -79,7 +79,9 @@ class CT_motor {
 	 
     if(count($arr)==1){
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── ############# MOTOR ask for starting');
-      $output = shell_exec('/usr/bin/php '.__DIR__.'/../../ressources/CT_motor_tick.php '.$cta_tr['dur_interval'].' >/dev/null &');
+      $command = '/usr/bin/php '.__DIR__.'/../../ressources/CT_motor_tick.php '.$cta_tr['dur_interval'];
+      $output = shell_exec($command.' >/dev/null &');
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR command :'.$command);
     }
   }
   

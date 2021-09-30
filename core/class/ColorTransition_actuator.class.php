@@ -33,11 +33,42 @@ class ColorTransition_actuator extends eqLogic {
       'move_out',
       'currentColor'
    );
+const MOTOR_MAX_TIME_DEFAULT = 7200;// 2 heures
 
 private $CT_equip = null; // l'quipement color transform, pour éviter le calcul à chaque itération
 private $colorArray = null; // l'array de couleur à soumettre à l'équipement ColorTransform, pour éviter le calcul à chaque itération
 private $bornes = null;
   
+  
+/* --------------------------  Fonctiond e cron pour check le process bien kill -------------------------------------- */
+ public static function cronDaily() {
+	log::add('ColorTransition_actuator', 'debug', '╔═══════════════════════ START CRON DAILY');
+   // get max time of execution
+   $maxTime = config::byKey('CT_motor_maxtime', __CLASS__, 0);
+   if($maxTime==0)$maxTime=self::MOTOR_MAX_TIME_DEFAULT;
+   log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR max execution time :'.$maxTime);
+   // vérification des pid sur le php
+	$pids = array();
+    $pid = exec("pgrep -f CT_motor_tick.php", $pids);
+    log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR PID :'.json_encode($pids).' | '.count($pids));
+   	if(count($pids)>1){// si il y a un moteur qui tourne
+      for($i=0; $i<count($pids)-1; $i++){
+        $execTime=intval(exec('ps -p '.$pids[$i].' -o etimes'));
+        log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR PID infos :'.$i.' | '.$pids[$i].' - exec time : '.$execTime);
+        if($execTime > $maxTime){
+          log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR KILL PID :'.$pids[$i]);
+        	//kill the process 
+          	 $output=exec('kill -9 '.$pids[$i]);
+          	// libération de la mémoire ocazou
+            $shx= new shmSmart();
+          	if($shx->has(CT_motor::SHM_KEY))$shx->del(CT_motor::SHM_KEY);
+            $shx->remove();
+            unset($shx);              
+        }
+      }
+    }
+	log::add('ColorTransition_actuator', 'debug', '╚═══════════════════════ END CRON ');
+  }
 
 //
 public function start_move($direction){

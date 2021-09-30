@@ -52,7 +52,7 @@ class shmSmart{
       return false;   
     }       
   }
-  public function has($key){
+  public function has($key){  
     if(shm_has_var($this->shm,$this->shm_key($key))){ // check is isset
       return true;       
     }else{
@@ -60,7 +60,7 @@ class shmSmart{
     }
   }
   public function shm_key($val){ // enable all world langs and chars !
-    return preg_replace("/[^0-9]/","",(preg_replace("/[^0-9]/","",md5($val))/35676248)/619876); // text to number system.
+    return intval(preg_replace("/[^0-9]/","",(preg_replace("/[^0-9]/","",md5($val))/35676248)/619876)); // text to number system.
   }
   public function __wakeup() {
     $this->attach();

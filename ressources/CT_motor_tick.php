@@ -68,12 +68,20 @@ function CT_motor_startTime($tickTime, $countLoop){
       	$arr[$id]=$cta_tr;
       }
    }
+  	
    log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─ cache array : '.json_encode($arr));
      
     $shx->put(CT_motor::SHM_KEY,$arr);
+  
+  //libération de la mémoire
+    unset($id);
+    unset($cta_tr);
+    unset($eq);
+    
     //log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK End  | '.microtime(true));
     if(count($arr)>0 && $countLoop<3600){
-      
+      unset($arr);
+      unset($shx); // ----> fuite de mémoire ici!
       if($minTime >=1){
         log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─ sleep time  : '.intval($minTime));
         sleep(intval($minTime));
@@ -85,9 +93,10 @@ function CT_motor_startTime($tickTime, $countLoop){
       }
       
     }else{
+      unset($arr);
       $shx->del(CT_motor::SHM_KEY); // delete key
       $shx->remove();
-      unset($shx); // free memory in php..
+      unset($shx); 
       log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------------------------   MOTOR END : ');
       $countLoop=0;
     }

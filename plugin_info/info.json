@@ -2,7 +2,7 @@
 	"id" : "ColorTransition_actuator",
 	"name" : "ColorTransition Actionneur",
 	"description" : {
-		"fr_FR": "Permet de dérouler des transitions à partir du plugin ColorTransition sur des commandes"
+		"fr_FR": "Permet de dérouler des transitions de couleurs à partir du plugin ColorTransition sur des commandes. Les couleurs sont applicable par la méthode event d'une commande info, par des commande de type message (dans le titre ou le mesage) ou des commande type color. Le plugin permet également d'appeler un scénario avec le tag color. Vous pouvez configurer plusieurs équipements, de différents type, à mettre à jour dans un seul équipement ColorTransform_actuator pour syncrhoniser les transitions."
 	},
 	"licence" : "AGPL",
 	"author" : "Billyben",
@@ -12,7 +12,7 @@
 	"hasOwnDeamon" : false,
 	"maxDependancyInstallTime" : 0,
 	"changelog" : "https://jeedom.github.io/plugin-template/#language#/changelog",
-	"documentation" : "https://jeedom.github.io/plugin-template/#language#/",
+	"documentation" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/fr_FR/changelog.md",
 	"link" : {
 		"forum":"Lien vers le forum",
 		"video" : "Lien vers une video"

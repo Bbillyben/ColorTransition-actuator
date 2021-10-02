@@ -31,7 +31,8 @@ class ColorTransition_actuator extends eqLogic {
       'setCurseurTarget',
       'move_in',
       'move_out',
-      'currentColor'
+      'currentColor',
+      'status'
    );
 const MOTOR_MAX_TIME_DEFAULT = 7200;// 2 heures
 const MOTOR_MIN_TIME_UPDATE_DEFAULT = 0.5;// 1/2 secondes
@@ -62,7 +63,14 @@ const MOTOR_MIN_TIME_UPDATE_DEFAULT = 0.5;// 1/2 secondes
           	 $output=exec('kill -9 '.$pids[$i]);
           	// libération de la mémoire ocazou
             $shx= new shmSmart();
-          	if($shx->has(CT_motor::SHM_KEY))$shx->del(CT_motor::SHM_KEY);
+          	if($shx->has(CT_motor::SHM_KEY)){
+              // remise à 0 des équipements 
+              foreach($shx->get(CT_motor::SHM_KEY) as $id=>$cta_tr){
+                $eq= $cta_tr['eqL'];
+                if(is_object($eq))$eq->endMove();
+              }
+              $shx->del(CT_motor::SHM_KEY);
+            }
             $shx->remove();
             unset($shx);              
         }
@@ -88,7 +96,8 @@ public function start_move($direction){
       log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── Couleurs : '.json_encode($this->colorArray));
       log::add('ColorTransition_actuator', 'debug', '║ ╚═════════════════════════════');
   	
-     CT_motor::addCTA($this, $direction); 	
+     CT_motor::addCTA($this, $direction);
+     $this->getCmd(null, 'status')->event(1);
 }
   
  public function stopMove(){
@@ -99,6 +108,7 @@ public function start_move($direction){
  
  public function endMove(){
   log::add('ColorTransition_actuator', 'debug', '║ END MOVE CALLED');
+  $this->getCmd(null, 'status')->event(0);
   // mise à null de la cible
   $ctCMD = $this->getCmd(null, 'curseurTarget');
     if (is_object($ctCMD)) {
@@ -298,11 +308,26 @@ public function getCommandArray(){
        $ctCMD->setLogicalId('currentColor');
        $ctCMD->setIsVisible(0);
        $ctCMD->setName(__('Couleur Courante', __FILE__));
+       $ctCMD->setTemplate('dashboard', 'ColorTransition::colorText');
+       $ctCMD->setTemplate('mobile', 'ColorTransition::colorText');
     }
     
     $ctCMD->setType('info');
     $ctCMD->setSubType('string');
     $ctCMD->setEqLogic_id($this->getId());
+    $ctCMD->save();
+     // commande info du status
+     $ctCMD = $this->getCmd(null, 'status');
+     if (!is_object($ctCMD)) {
+        $ctCMD = new ColorTransition_actuatorCmd();
+        $ctCMD->setLogicalId('status');
+        $ctCMD->setIsVisible(1);
+        $ctCMD->setName(__('Status', __FILE__));
+     }
+     
+     $ctCMD->setType('info');
+     $ctCMD->setSubType('binary');
+     $ctCMD->setEqLogic_id($this->getId());
       
     $ctCMD->save();
    // commande info de la valeur de curseur
@@ -330,6 +355,8 @@ public function getCommandArray(){
          $ctCMDAct->setLogicalId('setCurseurIndex');
          $ctCMDAct->setIsVisible(1);
          $ctCMDAct->setName(__('Set Curseur', __FILE__));
+         $ctCMDAct->setTemplate('dashboard', 'ColorTransition::rangedSlider');
+         $ctCMDAct->setTemplate('mobile', 'ColorTransition::rangedSlider');
       }
       
       $ctCMDAct->setValue($ctCMD->getId());
@@ -367,6 +394,8 @@ public function getCommandArray(){
          $ctCMDAct->setLogicalId('setCurseurTarget');
          $ctCMDAct->setIsVisible(1);
          $ctCMDAct->setName(__('Set Cible', __FILE__));
+         $ctCMDAct->setTemplate('dashboard', 'ColorTransition::rangedSlider');
+         $ctCMDAct->setTemplate('mobile', 'ColorTransition::rangedSlider');
       }
       
       $ctCMDAct->setValue($ctCMD->getId());

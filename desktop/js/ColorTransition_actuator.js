@@ -35,7 +35,7 @@ function addCmdToTable(_cmd) {
      _cmd.configuration = {};
    }
 
-   if( _cmd.logicalId =='stop' || _cmd.logicalId =='currentColor' || _cmd.logicalId =='setCurseurTarget' || _cmd.logicalId =='curseurTarget' || _cmd.logicalId == 'move_in' || _cmd.logicalId == 'move_out' ||_cmd.logicalId == 'curseurIndex' || _cmd.logicalId == 'setCurseurIndex'  ){
+   if( _cmd.logicalId =='status' || _cmd.logicalId =='stop' || _cmd.logicalId =='currentColor' || _cmd.logicalId =='setCurseurTarget' || _cmd.logicalId =='curseurTarget' || _cmd.logicalId == 'move_in' || _cmd.logicalId == 'move_out' ||_cmd.logicalId == 'curseurIndex' || _cmd.logicalId == 'setCurseurIndex'  ){
       var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
       tr += '<td style="width:60px;">';
       tr += '<span class="cmdAttr" data-l1key="id"></span>';

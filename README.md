@@ -93,3 +93,13 @@ se réfère aux paramètres de format de l'équipement ColorTransform (voir [Doc
   * *Hexadécimal* : format ``#AAWWRRGGBB`` ou ``#AARRGGBB`` ou ``#WWRRGGBB`` ou ``#RRGGBB``  
   * *json* : format type json : ``{"r":rr,"g":gg,"b":bb,"a":aa, "w":ww}``, avec ou sans les canaux ``a`` et ``w``, au minimal ``{"r":rr,"g":gg,"b":bb}``
 
+
+## Configuration du plugin
+ <p align="center">
+  <img width="100%" src="/plugin_info/img/configuration.png">
+</p>
+Deux paramètres sont ajustables : 
+
+* __Temps Maximum d'exécution du moteur__ : Permet de définir un temps maximum d'exécution du moteur, exprimé en seconde. permet de limiter le temps max par sécurité. Par défaut à 7200 secondes => 2 heures!
+* __Temps minimum de mise à jour de la transition__ : permet de définir le temps minimum que vous pouvez définir dans les équipements. Par défaut à 0.5. Attention déscendre trop bas risque de faire ramer les transition, voir la machine...!
+

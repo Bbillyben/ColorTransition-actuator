@@ -36,6 +36,8 @@ Vous pouvez configurer plusieurs équipements/commandes, de différents types, �
  
  La liste des équipements disponibles présente les équipements colortransform activés.
  
+ Cet équipement Colortransition sera utilisé pour calculer la valeur de la couleur de transition, selon ses paramètres, à l'exception du format de sortie qui sont défini par 'activateur' (canal alpha, canal blanc et format hexadécimal ou json).
+ 
  ### Paramètres Transition
  
  * __Durée Move In__ : durée, en secondes, de la transition vers le haut (100%) ou vers la cible

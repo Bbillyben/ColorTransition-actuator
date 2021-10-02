@@ -11,8 +11,8 @@
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,
 	"maxDependancyInstallTime" : 0,
-	"changelog" : "https://jeedom.github.io/plugin-template/#language#/changelog",
-	"documentation" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/fr_FR/changelog.md",
+	"changelog" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/fr_FR/changelog.md",
+	"documentation" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/README.md",
 	"link" : {
 		"forum":"Lien vers le forum",
 		"video" : "Lien vers une video"

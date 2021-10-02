@@ -112,6 +112,8 @@ class CT_motor {
     if(!is_object($cmd))throw new Exception(__('Commande index cible non trouvé', __FILE__));
     $cur_target=$cmd->execCmd();
     
+    $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
+     
     if($cur_target==null){
       if($direction>0){
         $cur_target=$bornes['max'];
@@ -133,7 +135,7 @@ class CT_motor {
        $start_index= $cur_target;
      }
 
-     $serialArray['dur']=($direction==1)?$dur_in:$dur_out;// durée enb fonction de la direction
+     
      $serialArray['dur_step']=ceil($serialArray['dur']/$serialArray['dur_interval']);
 
      $serialArray['index_step']=($end_index-$start_index)/$serialArray['dur_step'];

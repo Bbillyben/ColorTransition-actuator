@@ -44,15 +44,15 @@ function CT_motor_startTime($tickTime, $countLoop, $maxIteration){
     $minTime = INF;// un chiffre haut pour calculer le min
    foreach($arr as $id=>$cta_tr){
       log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR CTA : '.$id);
-      $cta_tr['curStep']=round($cta_tr['curStep']-$tickTime, 3);
-      $cta_tr['dur']=round($cta_tr['dur']-$tickTime, 3);
+      $cta_tr['curStep']=$cta_tr['curStep']-$tickTime;
+      $cta_tr['dur']=$cta_tr['dur']-$tickTime;
       if ($cta_tr['curStep'] <= 0 ||  $cta_tr['dur']<=0){  // si on doit mettre à jour
         $eq= $cta_tr['eqL'];
         if(!is_object($eq)){
           log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
         }
         $cta_tr['curStep'] = $cta_tr['dur_interval'];// remise à l'initial du compteur
-        $cta_tr['move_index']=round($cta_tr['move_index']+$cta_tr['index_step'], 3);
+        $cta_tr['move_index']=$cta_tr['move_index']+$cta_tr['index_step'];
         $eq->refreshEquipementColor($cta_tr['move_index'],$cta_tr['CT_equip'],$cta_tr['bornes'], $cta_tr['colorArray']); 
         log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR new index : '.$cta_tr['move_index']);
         

@@ -6,7 +6,7 @@
 	},
 	"licence" : "AGPL",
 	"author" : "Billyben",
-	"require" : "3.3.39",
+	"require" : "4.0.0",
 	"category" : "programming",
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,

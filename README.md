@@ -55,10 +55,10 @@ Vous pouvez configurer plusieurs équipements/commandes, de différents types, �
 
 * __Status__ : Info type binaire qui renseigne si la transition est en cours de mouvement (1/true : en cours, 0/false : arrêtée)
 
-* __Move In__ : Action qui permet de lancer la transition : 
+* __Move In__ : Action qui permet de lancer la transition, à partir de la valeur actuelle : 
   * vers le haut/100% ou 
   * vers la valeur de `cible curseur` si elle est définie
-* __Move Out__ : Action qui permet de lancer la transition : 
+* __Move Out__ : Action qui permet de lancer la transition, à partir de la valeur actuelle  : 
   * vers le bas/0% ou 
   * *A partir de* la valeur de `cible curseur` si elle est définie vers la valeur actuelle de `Curseur`
 * __Stop__ : Action qui permet d'arrêter la transition

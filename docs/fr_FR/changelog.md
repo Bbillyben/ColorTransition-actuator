@@ -1,1 +1,1 @@
-## Octobre 2021 : Beta release
+## Octobre 2021 : Stable release

@@ -22,7 +22,7 @@ You can configure several devices/commands, of different types, to be updated in
 
  ### General Settings      
  <p align="center">
-  <img width="50%%" src="/plugin_info/img/equipment.png">
+  <img width="50%%" src="/plugin_info/img/equipement.png">
 </p>
 
  * __Equipment Name__ 
@@ -69,7 +69,7 @@ You can configure several devices/commands, of different types, to be updated in
 
 List of commands or scenarios to activate when updating transitions.
  <p align="center">
-  <img width="100%" src="/plugin_info/img/actuator.png">
+  <img width="100%" src="/plugin_info/img/actionneur.png">
 </p>
 
 * __Name__: a unique name that you choose

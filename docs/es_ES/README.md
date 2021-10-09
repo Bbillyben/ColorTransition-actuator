@@ -22,7 +22,7 @@ Puede configurar varios dispositivos/comandos, de diferentes tipos, para que se 
 
  ### Ajustes generales      
  <p align="center">
-  <img width="50%%" src="/plugin_info/img/equipamiento.png">
+  <img width="50%%" src="/plugin_info/img/equipement.png">
 </p>
 
  * __Nombre del equipo__ 
@@ -69,7 +69,7 @@ Puede configurar varios dispositivos/comandos, de diferentes tipos, para que se 
 
 Lista de comandos o escenarios a activar al actualizar las transiciones.
  <p align="center">
-  <img width="100%" src="/plugin_info/img/actuator.png">
+  <img width="100%" src="/plugin_info/img/actionneur.png">
 </p>
 
 * __Name__: un nombre único que usted elija

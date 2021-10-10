@@ -11,7 +11,7 @@
 		"Set Cible": "Set Target",
 		"Move in": "Move in",
 		"Move Out": "Move Out",
-		"Stop  ": "Stop"
+		"Stop": "Stop"
 	},
 	"plugins\/ColorTransition_actuator\/core\/class\/CT_motor.class.php": {
 		"Equipement ColorTransition non trouvé": "ColorTransition equipment not found",

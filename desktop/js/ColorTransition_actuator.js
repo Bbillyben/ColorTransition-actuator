@@ -139,11 +139,11 @@ function addCmdToTable(_cmd) {
       tr += '<td style="width:100px;">';
     	// use alpha
      tr += '<div class="input-group">';
-    	tr += '<input type="checkbox" class="cmdAttr" data-l1key="configuration" data-l2key="use_alpha" checked="">use alpha</input>';
+    	tr += '<input type="checkbox" class="cmdAttr" data-l1key="configuration" data-l2key="use_alpha" checked="">{{utiliser alpha}}</input>';
      tr += '</div>';
     	//use white
     tr += '<div class="input-group">';
-    tr += '<input type="checkbox" class="cmdAttr" data-l1key="configuration" data-l2key="use_white">use White</input>';
+       tr += '<input type="checkbox" class="cmdAttr" data-l1key="configuration" data-l2key="use_white">{{utiliser White}}</input>';
      tr += '</div>';
       tr += '</td>';
     

@@ -37,7 +37,9 @@
 		"Valeur (par défaut)": "Valor (por defecto)",
 		"titre": "título",
 		"message": "mensaje",
-		"Couleur": "color"
+		"Couleur": "color",
+		"utiliser alpha": "usar alfa",
+		"utiliser White": "usar blanco"
 	},
 	"plugins\/ColorTransition_actuator\/desktop\/php\/ColorTransition_actuator.php": {
 		"401 - Accès non autorisé": "401 - Acceso no autorizado",
@@ -46,7 +48,7 @@
 		"Ajouter": "Añadir",
 		"Configuration": "Configuración",
 		"Mes Actionneur": "Mi Actuador",
-		"Aucun équipement Template n\\'est paramétré, cliquer sur \\\"Ajouter\\\" pour commencer": "No se ha configurado ningún equipo de plantilla, haga clic en \"Añadir\" para empezar",
+		"Aucun équipement ColorTransitions n'est paramétré, cliquer sur 'Ajouter' pour commencer": "No se ha configurado ningún equipo de plantilla, haga clic en \"Añadir\" para empezar",
 		"Rechercher": "Buscar",
 		"Configuration avancée": "Configuración avanzada",
 		"Dupliquer": "Duplicado",
@@ -65,7 +67,7 @@
 		"Visible": "Visible",
 		"Equipement ColorTransition": "Equipo ColorTransition",
 		"selection du ColorTransition": "Selección de ColorTransition",
-		"l\\'équipement ColorTransition <i>activé</i> qui servira aux calculs": "Equipo ColorTransition <i>habilitado</i> para ser utilizado en los cálculos",
+		"l'équipement ColorTransition <i>activé</i> qui servira aux calculs": "Equipo ColorTransition <i>habilitado</i> para ser utilizado en los cálculos",
 		"Paramètres Transition": "Parámetros de transición",
 		"Durée Move In": "Duración Move In",
 		"durée en secondes": "Duración en segundos",

@@ -37,7 +37,9 @@
 		"Valeur (par défaut)": "Value (default)",
 		"titre": "title",
 		"message": "message",
-		"Couleur": "Color"
+		"Couleur": "Color",
+		"utiliser alpha": "use alpha",
+		"utiliser White": "use White"
 	},
 	"plugins\/ColorTransition_actuator\/desktop\/php\/ColorTransition_actuator.php": {
 		"401 - Accès non autorisé": "401 - Unauthorized access",
@@ -46,7 +48,7 @@
 		"Ajouter": "Ass",
 		"Configuration": "Configuration",
 		"Mes Actionneur": "My Actuator",
-		"Aucun équipement Template n\\'est paramétré, cliquer sur \\\"Ajouter\\\" pour commencer": "No Template equipment is set up, click on \"Add\" to start",
+		"Aucun équipement ColorTransitions n'est paramétré, cliquer sur Ajouter pour commencer": "No ColorTransition equipment is set up, click on \"Add\" to start",
 		"Rechercher": "Search",
 		"Configuration avancée": "Advanced configuration",
 		"Dupliquer": "Duplicate",
@@ -65,7 +67,7 @@
 		"Visible": "Visible",
 		"Equipement ColorTransition": "ColorTransition equipment",
 		"selection du ColorTransition": "ColorTransition selection",
-		"l\\'équipement ColorTransition <i>activé<i> qui servira aux calculs": "ColorTransition equipment <i>enabled</i> to be used for calculations",
+		"l'équipement ColorTransition <i>activé</i> qui servira aux calculs": "ColorTransition equipment <i>enabled</i> to be used for calculations",
 		"Paramètres Transition": "Transition parameters",
 		"Durée Move In": "Duration Move In",
 		"durée en secondes": "Duration in seconds",

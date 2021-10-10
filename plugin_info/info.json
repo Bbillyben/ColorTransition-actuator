@@ -2,7 +2,9 @@
 	"id" : "ColorTransition_actuator",
 	"name" : "ColorTransition Actionneur",
 	"description" : {
-		"fr_FR": "Permet de dérouler des transitions de couleurs à partir du plugin ColorTransition sur des commandes. Les couleurs sont applicable par la méthode event d'une commande info, par des commande de type message (dans le titre ou le mesage) ou des commande type color. Le plugin permet également d'appeler un scénario avec le tag color. Vous pouvez configurer plusieurs équipements, de différents type, à mettre à jour dans un seul équipement ColorTransform_actuator pour syncrhoniser les transitions."
+		"fr_FR": "Permet de dérouler des transitions de couleurs à partir du plugin ColorTransition sur des commandes. Les couleurs sont applicable par la méthode event d'une commande info, par des commande de type message (dans le titre ou le mesage) ou des commande type color. Le plugin permet également d'appeler un scénario avec le tag color. Vous pouvez configurer plusieurs équipements, de différents type, à mettre à jour dans un seul équipement ColorTransform_actuator pour syncrhoniser les transitions.",
+		"en_US": "Allows to run color transitions from the ColorTransition plugin on commands. The colors are applicable by the event method of an info command, by message type commands (in the title or the message) or by color type commands. The plugin also allows to call a scenario with the color tag. You can configure several devices, of different types, to be updated in a single device ColorTransform_actuator to sync the transitions.",
+		"es_ES": "Permite desenrollar las transiciones de color del plugin ColorTransition en los comandos. Los colores son aplicables por el método de evento de un comando de información, por comandos de tipo de mensaje (en el título o en el mensaje) o por comandos de tipo de color. El plugin también permite llamar a un escenario con la etiqueta de color. Puede configurar varios dispositivos, de diferentes tipos, para que se actualicen en un único dispositivo ColorTransform_actuator para sincronizar las transiciones."
 	},
 	"licence" : "AGPL",
 	"author" : "Billyben",
@@ -11,17 +13,24 @@
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,
 	"maxDependancyInstallTime" : 0,
-	"changelog" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/fr_FR/changelog.md",
-	"documentation" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/README.md",
+	"changelog" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/#language#/changelog.md",
+	"documentation" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/#language#/README.md",
 	"link" : {
 		"forum":"Lien vers le forum",
 		"video" : "Lien vers une video"
 	},
 	"language": [
-		"fr_FR"
+		"fr_FR",
+		"en_EN",
+		"en_US",
+		"es_ES"
 	],
 	"compatibility": [
-		"v4",
-		"atlas"
+		"Smart",
+		"atlas",
+		"RPI\/RPI2",
+		"Docker",
+		"DIY",
+		"v4"
 	]
 }

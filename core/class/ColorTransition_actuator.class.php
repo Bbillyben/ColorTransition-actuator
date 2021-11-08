@@ -168,7 +168,7 @@ public function start_move($direction){
    $ctCMD = $this->getCmd(null, 'curseurIndex');
     if (!is_object($ctCMD)) {
        log::add('ColorTransition_actuator', 'error', '### Curseur Courante non trouvée ');
-      return;
+      return false;
     }
      $ctCMD->event($cursorIndex);
   }
@@ -295,8 +295,8 @@ public function getCommandArray(){
         	throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
         }
       }else{
-        $this->bornes=$ct_eq->getBornes();
-      	log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($this->bornes)); 
+        $bornes=$ct_eq->getBornes();
+      	log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($bornes)); 
       
       }
       
@@ -341,8 +341,8 @@ public function getCommandArray(){
     
     $ctCMD->setType('info');
     $ctCMD->setSubType('numeric');
-      $ctCMD->setConfiguration('minValue',$this->bornes['min']);
-    $ctCMD->setConfiguration('maxValue',$this->bornes['max']);
+    $ctCMD->setConfiguration('minValue',$bornes['min']);
+    $ctCMD->setConfiguration('maxValue',$bornes['max']);
     $ctCMD->setEqLogic_id($this->getId());
       
     $ctCMD->save();
@@ -362,8 +362,8 @@ public function getCommandArray(){
       $ctCMDAct->setValue($ctCMD->getId());
       $ctCMDAct->setType('action');
       $ctCMDAct->setSubType('slider');
-      $ctCMDAct->setConfiguration('minValue',$this->bornes['min']);
-		$ctCMDAct->setConfiguration('maxValue',$this->bornes['max']);
+      $ctCMDAct->setConfiguration('minValue',$bornes['min']);
+		$ctCMDAct->setConfiguration('maxValue',$bornes['max']);
       
       $ctCMDAct->setEqLogic_id($this->getId());
       
@@ -380,8 +380,8 @@ public function getCommandArray(){
     }
     $ctCMD->setType('info');
     $ctCMD->setSubType('numeric');
-      $ctCMD->setConfiguration('minValue',$this->bornes['min']);
-    $ctCMD->setConfiguration('maxValue',$this->bornes['max']);
+      $ctCMD->setConfiguration('minValue',$bornes['min']);
+    $ctCMD->setConfiguration('maxValue',$bornes['max']);
     $ctCMD->setEqLogic_id($this->getId());
       
     $ctCMD->save();
@@ -401,8 +401,8 @@ public function getCommandArray(){
       $ctCMDAct->setValue($ctCMD->getId());
       $ctCMDAct->setType('action');
       $ctCMDAct->setSubType('slider');
-      $ctCMDAct->setConfiguration('minValue',$this->bornes['min']);
-    $ctCMDAct->setConfiguration('maxValue',$this->bornes['max']);
+      $ctCMDAct->setConfiguration('minValue',$bornes['min']);
+    $ctCMDAct->setConfiguration('maxValue',$bornes['max']);
       $ctCMDAct->setEqLogic_id($this->getId());
       
       //save

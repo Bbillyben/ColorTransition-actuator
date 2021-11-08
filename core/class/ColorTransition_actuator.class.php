@@ -50,8 +50,7 @@ const MOTOR_MIN_TIME_UPDATE_DEFAULT = 0.5;// 1/2 secondes
    if($maxTime==0)$maxTime=self::MOTOR_MAX_TIME_DEFAULT;
    log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR max execution time :'.$maxTime);
    // vérification des pid sur le php
-	$pids = array();
-    $pid = exec("pgrep -f CT_motor_tick.php", $pids);
+	$pids = self::getMotorPID();
     log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR PID :'.json_encode($pids).' | '.count($pids));
    	if(count($pids)>1){// si il y a un moteur qui tourne
       for($i=0; $i<count($pids)-1; $i++){
@@ -77,6 +76,57 @@ const MOTOR_MIN_TIME_UPDATE_DEFAULT = 0.5;// 1/2 secondes
       }
     }
 	log::add('ColorTransition_actuator', 'debug', '╚═══════════════════════ END CRON ');
+  }
+  
+  public static function stop_all_motor(){
+    log::add('ColorTransition_actuator', 'debug', '╔═══════════════════════ START KILL MOTOR');
+  		$pids = self::getMotorPID();
+    
+    log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR PID :'.json_encode($pids).' | '.count($pids));
+   	if(count($pids)>1){// si il y a un moteur qui tourne
+      for($i=0; $i<count($pids)-1; $i++){
+        log::add('ColorTransition_actuator', 'debug', '╟─── MOTOR KILL PID :'.$pids[$i]);
+        //kill the process 
+         $output=exec('kill -9 '.$pids[$i]);
+      }
+    }
+    log::add('ColorTransition_actuator', 'debug', '╟─── Memory kill ');
+    // libération de la mémoire ocazou
+      $shx= new shmSmart();
+      if($shx->has(CT_motor::SHM_KEY)){
+        log::add('ColorTransition_actuator', 'debug', '╟─── Memory in use :'.json_encode($shx->get(CT_motor::SHM_KEY)));
+        // remise à 0 des équipements 
+        foreach($shx->get(CT_motor::SHM_KEY) as $id=>$cta_tr){
+          $eq= $cta_tr['eqL'];
+          if(is_object($eq))$eq->endMove();
+        }
+        $shx->del(CT_motor::SHM_KEY);
+      }
+      $shx->remove();
+      unset($shx);     
+    log::add('ColorTransition_actuator', 'debug', '╚═══════════════════════ END KILL ');
+  	return true;
+  }
+  
+  public static function getMotorPID(){
+    $pids = array();
+    $pid = exec("pgrep -f CT_motor_tick.php", $pids);
+    return $pids;
+  }
+    
+ 
+  public static function getMemStatus(){
+     $shx= new shmSmart();
+      if($shx->has(CT_motor::SHM_KEY)){
+        log::add('ColorTransition_actuator', 'debug', '╟─── Memory in use :'.json_encode($shx->get(CT_motor::SHM_KEY)));
+        $jsonvar = $shx->get(CT_motor::SHM_KEY);
+        // remise à 0 des équipements 
+       
+      }else{
+        	$jsonvar = 'pas de données';
+      }
+      unset($shx);    
+    	return json_encode($jsonvar);
   }
 
 //
@@ -107,7 +157,7 @@ public function start_move($direction){
  }
  
  public function endMove(){
-  log::add('ColorTransition_actuator', 'debug', '║ END MOVE CALLED');
+  log::add('ColorTransition_actuator', 'debug', '║ END MOVE CALLED :'.microtime(true));
   $this->getCmd(null, 'status')->event(0);
   // mise à null de la cible
   $ctCMD = $this->getCmd(null, 'curseurTarget');
@@ -119,7 +169,7 @@ public function start_move($direction){
   
 // set des equipement en fonc tion du curseur courant
   public function refreshEquipementColor($cursorIndex, $CT_equip=null,$bornes=null, $colorArray=null ){
-    log::add('ColorTransition_actuator', 'debug', '║ ╠════ Update colors, index '.$this->getId().' :'.$cursorIndex);
+    log::add('ColorTransition_actuator', 'debug', '║ ╠════ Update colors, index '.$this->getId().' :'.$cursorIndex.' / time :'.microtime(true));
     
     // vérif valorisation CT equipement
     if($CT_equip == null){
@@ -168,7 +218,7 @@ public function start_move($direction){
    $ctCMD = $this->getCmd(null, 'curseurIndex');
     if (!is_object($ctCMD)) {
        log::add('ColorTransition_actuator', 'error', '### Curseur Courante non trouvée ');
-      return false;
+      return;
     }
      $ctCMD->event($cursorIndex);
   }
@@ -295,8 +345,8 @@ public function getCommandArray(){
         	throw new Exception(__('Equipement ColorTransition non trouvé', __FILE__));
         }
       }else{
-        $bornes=$ct_eq->getBornes();
-      	log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($bornes)); 
+        $this->bornes=$ct_eq->getBornes();
+      	log::add('ColorTransition_actuator', 'debug', '╠════ bornes CT eq : '.json_encode($this->bornes)); 
       
       }
       
@@ -341,8 +391,8 @@ public function getCommandArray(){
     
     $ctCMD->setType('info');
     $ctCMD->setSubType('numeric');
-    $ctCMD->setConfiguration('minValue',$bornes['min']);
-    $ctCMD->setConfiguration('maxValue',$bornes['max']);
+      $ctCMD->setConfiguration('minValue',$this->bornes['min']);
+    $ctCMD->setConfiguration('maxValue',$this->bornes['max']);
     $ctCMD->setEqLogic_id($this->getId());
       
     $ctCMD->save();
@@ -362,8 +412,8 @@ public function getCommandArray(){
       $ctCMDAct->setValue($ctCMD->getId());
       $ctCMDAct->setType('action');
       $ctCMDAct->setSubType('slider');
-      $ctCMDAct->setConfiguration('minValue',$bornes['min']);
-		$ctCMDAct->setConfiguration('maxValue',$bornes['max']);
+      $ctCMDAct->setConfiguration('minValue',$this->bornes['min']);
+		$ctCMDAct->setConfiguration('maxValue',$this->bornes['max']);
       
       $ctCMDAct->setEqLogic_id($this->getId());
       
@@ -380,8 +430,8 @@ public function getCommandArray(){
     }
     $ctCMD->setType('info');
     $ctCMD->setSubType('numeric');
-      $ctCMD->setConfiguration('minValue',$bornes['min']);
-    $ctCMD->setConfiguration('maxValue',$bornes['max']);
+      $ctCMD->setConfiguration('minValue',$this->bornes['min']);
+    $ctCMD->setConfiguration('maxValue',$this->bornes['max']);
     $ctCMD->setEqLogic_id($this->getId());
       
     $ctCMD->save();
@@ -401,8 +451,8 @@ public function getCommandArray(){
       $ctCMDAct->setValue($ctCMD->getId());
       $ctCMDAct->setType('action');
       $ctCMDAct->setSubType('slider');
-      $ctCMDAct->setConfiguration('minValue',$bornes['min']);
-    $ctCMDAct->setConfiguration('maxValue',$bornes['max']);
+      $ctCMDAct->setConfiguration('minValue',$this->bornes['min']);
+    $ctCMDAct->setConfiguration('maxValue',$this->bornes['max']);
       $ctCMDAct->setEqLogic_id($this->getId());
       
       //save

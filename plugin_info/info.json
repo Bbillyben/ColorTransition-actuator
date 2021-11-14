@@ -16,7 +16,7 @@
 	"changelog" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/#language#/changelog.md",
 	"documentation" : "https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/#language#/README.md",
 	"link" : {
-		"forum":"https://community.jeedom.com/t/plugin-colortransition-actuator-mettre-en-mouvement-colortransition/68617"
+		"forum":"https://community.jeedom.com/tag/plugin-colortransition_actuator"
 	},
 	"language": [
 		"fr_FR",

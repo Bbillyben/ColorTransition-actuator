@@ -1,3 +1,8 @@
+# 28/11/2021
+- ajout des commandes boucles sur les transitions :
+  - boucle infinie : commande action simple
+  - boucle : nombre d'itérations définie dans une commande message
+
 # 8/11/2021
  - Add plugin conf : 
    - emergency motor stop

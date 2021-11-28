@@ -46,7 +46,7 @@ You can configure several devices/commands, of different types, to be updated in
 
 ## Commands
 
- Nine commands are created with the equipment: 
+ Eleven commands are created with the equipment: 
  * __Cursor__ : Info type numeric which contains the value of the cursor. The min and max limits are set from the limits defined in the ColorTransition device chosen
 * __Set Cursor__ : Action type slider which allows to define the value of *Cursor* between the specified limits
  * Cursor Target__ : Numeric type info that contains the target value of the cursor. This value is removed at the end of the transition
@@ -62,6 +62,11 @@ You can configure several devices/commands, of different types, to be updated in
   * down/0% or 
   * *From* the value of `Target Cursor` if it is defined to the current value of `Cursor`.
 * __Stop__: Action that stops the transition
+* __Infinite loop__ : Action that allows to launch a loop, always started upwards (100% or target), between the current position of the cursor and the 100% or the target, and that will stop only at the call to ``Stop````'' or at the maximum execution time of the engine
+* __Loop__ : Action of sub type message, which allows to start a loop, always started upwards (100% or target), between the current position of the cursor and the 100% or the target, which will stop after n iterations defined in the title or the body of the message.
+
+Translated with www.DeepL.com/Translator (free version)
+
 
 > Note:* the default templates applied to `Current Color`, `Set Cursor` and `Set Index` are those of the ColorTransform plugin
 
@@ -104,4 +109,5 @@ Two parameters are adjustable:
 
 * __Maximum engine execution time__: Allows you to set a maximum engine execution time, expressed in seconds. allows you to limit the max time for safety. Default is 7200 seconds => 2 hours!
 * __Minimum time to update the transition__ : allows you to define the minimum time you can set in the equipment. Default is 0.5. Be careful, going down too low may make the transition slow down, or even the machine...!
-
+* __Emergency engine stop__ : stop all transitions and purge the memory, if needed.
+* __Data Engine in progress__ : the data used by the engine in progress

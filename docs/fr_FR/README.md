@@ -46,7 +46,7 @@ Vous pouvez configurer plusieurs équipements/commandes, de différents types, �
 
 ## Commandes
 
- Neuf commandes sont crées avec l'équipement : 
+ Onze commandes sont crées avec l'équipement : 
  * __Curseur__ : Info type numeric qui contient la valeur du curseur. Les bornes min max sont renseignées à partir des bornes définies dans l'équipement ColorTransition choisi
 * __Set Curseur__ : Action type slider qui permet de définir la valeur de *Curseur* entre les bornes spécifiées
  * __Cible Curseur__ : Info type numeric qui contient la valeur cible du curseur. cette valeur est supprimée en fin de transition
@@ -62,6 +62,8 @@ Vous pouvez configurer plusieurs équipements/commandes, de différents types, �
   * vers le bas/0% ou 
   * *A partir de* la valeur de `cible curseur` si elle est définie vers la valeur actuelle de `Curseur`
 * __Stop__ : Action qui permet d'arrêter la transition
+* __Boucle Infinie__ : Action qui permet de lancer une boucle, toujours démarrée vers le haut (100% ou cible), entre la position actuelle du curseur et le 100% ou la cible, et qui ne s'arrêtera qu'à l'applel à ```Stop```` ou au temps maximum d'execution du moteur
+* __Boucle__ : Action de sous type message, qui permet delancer une boucle, toujours démarrée vers le haut (100% ou cible), entre la position actuelle du curseur et le 100% ou la cible, qui s'arretera au bout de n itérations définie dans le titre ou le corps du message.
 
 > *Note :* les templates par défaut appliqués à `Couleur Courante`, `Set Curseur` et `Set Index` sont ceux du plugin ColorTransform
 
@@ -104,4 +106,5 @@ Deux paramètres sont ajustables :
 
 * __Temps Maximum d'exécution du moteur__ : Permet de définir un temps maximum d'exécution du moteur, exprimé en seconde. permet de limiter le temps max par sécurité. Par défaut à 7200 secondes => 2 heures!
 * __Temps minimum de mise à jour de la transition__ : permet de définir le temps minimum que vous pouvez définir dans les équipements. Par défaut à 0.5. Attention déscendre trop bas risque de faire ramer les transition, voir la machine...!
-
+* __Arret d'urgence du moteur__ : arret de toutes les transition et purge de la mémoire, au besoin.
+* __Data Moteur en cours__ : Les données utilisées par le moteur en cours d'execution

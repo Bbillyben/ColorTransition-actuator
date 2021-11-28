@@ -18,9 +18,9 @@ Vous pouvez configurer plusieurs équipements/commandes, de différents types, �
 
 Documentation :
 
-    fr : https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/fr_FR
-    en : https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/en_US
-    es : https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/es_ES
+fr : https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/fr_FR
+en : https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/en_US
+es : https://github.com/Bbillyben/ColorTransition_actuator/blob/master/docs/es_ES
 
 Forum/community :
 

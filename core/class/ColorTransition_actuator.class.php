@@ -129,7 +129,7 @@ const MOTOR_MIN_TIME_UPDATE_DEFAULT = 0.5;// 1/2 secondes
     	return json_encode($jsonvar);
   }
 
-//
+// =============================================== FONCTIONS DE CONTROLE
 public function start_move($direction){
    //cache::delete('COLOR_TRANSITION::serial_array');
    log::add('ColorTransition_actuator','debug', "║ ╔═══════════════════════ Start move / direction : ".$direction);
@@ -164,11 +164,39 @@ public function start_move($direction){
     if (is_object($ctCMD)) {
       $ctCMD->event(null);
     }
+    // suppression des infos de loop
+    $this->setConfiguration('ct_loop', null);
+    $this->setConfiguration('ct_loop_value', null);
  }
 
+ public function start_loop($numloop){
+  log::add('ColorTransition_actuator','debug', "║ ╔═══════════════════════ Start loop : ".$numloop);
+  if(is_numeric($numloop)){
+    $this->setConfiguration('ct_loop', $numloop);
+  }else{
+    log::add('ColorTransition_actuator', 'warning', '║ ##### LOOP NUM not numeric ('.$numloop.')');
+    return;
+  }
+  $oldpos = $this->getConfiguration('ct_loop_value');
+  $targetvalue = $this->getCmd(null, 'curseurTarget')->execCmd();
+  $currentvalue = $this->getCmd(null, 'curseurIndex')->execCmd();
+  log::add('ColorTransition_actuator', 'debug', "║ ╟─── Loop ini conf : old- $oldpos /current target - $targetvalue / current value - $currentvalue  ");
+
+  if($this->getCmd(null, 'status')->execCmd()==true){
+    $this->getCmd(null, 'curseurTarget')->event($oldpos);
+    $direction=($oldpos==0)?-1:1;
+  }else{
+    $direction=1;
+  }
+  $this->setConfiguration('ct_loop_value', $currentvalue);
+
   
-// set des equipement en fonc tion du curseur courant
-  public function refreshEquipementColor($cursorIndex, $CT_equip=null,$bornes=null, $colorArray=null ){
+  $this->start_move($direction);
+
+ }
+  // =============================================== FONCTIONS DE CALCULS
+// set des equipement en fonction du curseur courant
+  public function refreshEquipementColor($cursorIndex, $CT_equip=null,$bornes=null, $colorArraySend=null ){
     log::add('ColorTransition_actuator', 'debug', '║ ╠════ Update colors, index '.$this->getId().' :'.$cursorIndex.' / time :'.microtime(true));
     
     // vérif valorisation CT equipement
@@ -184,8 +212,11 @@ public function start_move($direction){
     $cursorIndex=min(max($cursorIndex,$bornes['min']),$bornes['max']);
     $cursPos=($cursorIndex-$bornes['min'])/($bornes['max']-$bornes['min']);
    // vérif color array défini
-    if($colorArray==null)$colorArray=$CT_equip->getColorsArray();
-   
+   if($this->colorArray==null && $colorArraySend!=null){
+     $this->colorArray=$colorArraySend;
+   }elseif($colorArraySend==null && $this->colorArray==null){
+    $this->colorArray=$CT_equip->getColorsArray();
+   }
     
     // gestion des actionneurs
     $actuators=$this->getCommandArray();
@@ -195,7 +226,7 @@ public function start_move($direction){
       //log::add('ColorTransition_actuator', 'debug', '║ ╟─── actuator : '.json_encode($actuator));
       $colorId=$actuator['color-format'].$actuator['use_alpha'].$actuator['use_white'];
       if(!in_array($colorId, $calculatedColors)){
-        $calculatedColors[$colorId] = $CT_equip->calculateColorFromIndex($cursPos, $colorArray,$actuator['use_alpha'],$actuator['use_white'],$actuator['color-format']);
+        $calculatedColors[$colorId] = $CT_equip->calculateColorFromIndex($cursPos, $this->colorArray,$actuator['use_alpha'],$actuator['use_white'],$actuator['color-format']);
       }
       $color = $calculatedColors[$colorId];
       switch($actuator['act_type']){
@@ -496,6 +527,31 @@ public function getCommandArray(){
       $ctCMDAct->setEqLogic_id($this->getId());
       $ctCMDAct->save();
 
+      // commande de loop
+      $ctCMDAct = $this->getCmd(null, 'infinite_loop');
+      if (!is_object($ctCMDAct)) {
+         $ctCMDAct = new ColorTransition_actuatorCmd();
+         $ctCMDAct->setLogicalId('infinite_loop');
+         $ctCMDAct->setIsVisible(1);
+         $ctCMDAct->setName(__('Boucle Infinie', __FILE__));
+      }
+      $ctCMDAct->setType('action');
+      $ctCMDAct->setSubType('other');
+      $ctCMDAct->setEqLogic_id($this->getId());
+      $ctCMDAct->save();
+
+      $ctCMDAct = $this->getCmd(null, 'loop');
+      if (!is_object($ctCMDAct)) {
+         $ctCMDAct = new ColorTransition_actuatorCmd();
+         $ctCMDAct->setLogicalId('loop');
+         $ctCMDAct->setIsVisible(1);
+         $ctCMDAct->setName(__('Boucle', __FILE__));
+      }
+      $ctCMDAct->setType('action');
+      $ctCMDAct->setSubType('message');
+      $ctCMDAct->setEqLogic_id($this->getId());
+      $ctCMDAct->save();
+
     }
 
  // Fonction exécutée automatiquement avant la suppression de l'équipement 
@@ -536,7 +592,7 @@ class ColorTransition_actuatorCmd extends cmd {
   // Exécution d'une commande  
      public function execute($_options = array()) {
 
-      log::add('ColorTransition_actuator','debug', "╔═══════════════════════ execute CMD : ".$this->getId()." | ".$this->getHumanName().", logical id : ".$this->getLogicalId() ."  options : ".print_r($_options));
+      log::add('ColorTransition_actuator','debug', "╔═══════════════════════ execute CMD : ".$this->getId()." | ".$this->getHumanName().", logical id : ".$this->getLogicalId() ."  options : ".json_encode($_options));
       log::add('ColorTransition_actuator','debug', '╠════ Eq logic '.$this->getEqLogic()->getHumanName());
       
       switch($this->getLogicalId()){
@@ -556,6 +612,16 @@ class ColorTransition_actuatorCmd extends cmd {
          case 'stop':
             $this->getEqLogic()->stopMove();
             break;
+          case 'infinite_loop':
+            $this->getEqLogic()->start_loop(-1);
+            break;
+            case 'loop':
+              $val = is_numeric($_options['title'])? intval($_options['title']):null;
+              if(!is_int($val))$val = is_numeric($_options['message'])? intval($_options['message']):null;
+              if(!is_int($val))throw new Exception(__('Pas de valeur entière détectée dans la commande', __FILE__));
+              log::add('ColorTransition_actuator', 'debug', '╟─── loop asked for : '.$val);
+              $this->getEqLogic()->start_loop($val);
+              break;
          Default:
          log::add('ColorTransition_actuator','debug', '╠════ Default call');
 

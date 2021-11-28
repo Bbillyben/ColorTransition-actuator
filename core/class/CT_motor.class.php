@@ -67,9 +67,11 @@ class CT_motor {
     $keyName=strval($cta_tr['id']);
     log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR cta arra '.$keyName.' : '.json_encode($cta_tr));
     
+    if(array_key_exists($keyName,$arr))unset($arr[$keyName]);
    	$arr[$keyName]=$cta_tr;
+
     $success=$shx->put(self::SHM_KEY,$arr);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR global arra '.$keyName.' | '.count($arr).'_'.($success?1:0).' : '.json_encode( $shx->get(self::SHM_KEY)));
+    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR global array '.$keyName.' | '.count($arr).'_'.($success?1:0).' : '.json_encode( $shx->get(self::SHM_KEY)));
 
     // mise à l'index initial
     $eq= $cta_tr["eqL"];
@@ -150,7 +152,7 @@ class CT_motor {
      
      $serialArray['CT_equip']=$CT_equip;
      $serialArray['bornes']=$bornes;
-     $serialArray['colorArray']=$CT_equip->getColorsArray();
+     //$serialArray['colorArray']=$CT_equip->getColorsArray();
 
     
 

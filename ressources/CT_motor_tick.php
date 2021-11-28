@@ -28,53 +28,73 @@ log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR TICK C
   /// le coeur du moteur  
 function CT_motor_startTime($tickTime, $countLoop, $maxIteration){
    $countLoop+=$tickTime;   
+   $loopSend =array();
     
     $shx= new shmSmart();
     
     
     if(!$shx->has(CT_motor::SHM_KEY)){
-      log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR time no shm ');
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR time no shm ');
       return false;
     }
 
-    log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─── MOTOR TICK '.$countLoop.' | '.microtime(true).' / max time : '.$maxIteration);
+    log::add('ColorTransition_actuator', 'info', '║ ║ ╟─── MOTOR TICK '.$countLoop.' | '.microtime(true).' / max time : '.$maxIteration);
     
     $arr = $shx->get(CT_motor::SHM_KEY);
 
     $minTime = INF;// un chiffre haut pour calculer le min
    foreach($arr as $id=>$cta_tr){
-      log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR CTA : '.$id);
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR CTA : '.$id);
       $cta_tr['curStep']=$cta_tr['curStep']-$tickTime;
       $cta_tr['dur']=$cta_tr['dur']-$tickTime;
       if ($cta_tr['curStep'] <=0.0001 ||  $cta_tr['dur']<=0.0001){  // si on doit mettre à jour
         $eq= $cta_tr['eqL'];
         if(!is_object($eq)){
-          log::add('ColorTransition_actuator_mouv', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
+          log::add('ColorTransition_actuator', 'error', '║ ║ ╟─── #############" MOTOR Error id :'.$cta_tr['id']);
         }
         $cta_tr['curStep'] = $cta_tr['dur_interval'];// remise à l'initial du compteur
         $cta_tr['move_index']=$cta_tr['move_index']+$cta_tr['index_step'];
-        $eq->refreshEquipementColor($cta_tr['move_index'],$cta_tr['CT_equip'],$cta_tr['bornes'], $cta_tr['colorArray']); 
-        log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─── MOTOR new index : '.$cta_tr['move_index']);
+        $eq->refreshEquipementColor($cta_tr['move_index'],$cta_tr['CT_equip'],$cta_tr['bornes']); 
+        log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR new index : '.$cta_tr['move_index']);
         
       }
-      //log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─ dur : '.$cta_tr['dur']);
+      log::add('ColorTransition_actuator', 'info', '║ ║ ╟─ dur : '.$cta_tr['dur']);
 
       // gestion du temps minimum
       $minTime=min($minTime,$cta_tr['dur'], $cta_tr['curStep']);
       
       if($cta_tr['dur']<=0.0001){
-        $cta_tr['eqL']->endMove();
-        unset($arr[$id]);
+        // gestion de la loop
+        $loopNum = $cta_tr['eqL']->getConfiguration('ct_loop');
+        if(is_null($loopNum) || $loopNum == 0){
+          $cta_tr['eqL']->endMove();
+          unset($arr[$id]);
+        }else{
+          $loopSend[]=$cta_tr;
+          unset($arr[$id]);
+          //$cta_tr['eqL']->start_loop(max($loopNum-1, -1));
+        }
+        
       }else{
       	$arr[$id]=$cta_tr;
       }
    }
   	
-   log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─ cache array : '.json_encode($arr));
+   log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─ cache array : '.json_encode($arr));
      
     $shx->put(CT_motor::SHM_KEY,$arr);
+
+    // envoi des élément en loop
+    foreach($loopSend as $cta_tr){
+      $loopNum = $cta_tr['eqL']->getConfiguration('ct_loop');
+      $cta_tr['eqL']->start_loop(max($loopNum-1, -1));
+      $arr = $shx->get(CT_motor::SHM_KEY);
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─ after loop array : '.json_encode($arr));
+    }
   
   //libération de la mémoire
+    unset($loopNum);
+    unset($loopSend);
     unset($id);
     unset($cta_tr);
     unset($eq);
@@ -84,11 +104,11 @@ function CT_motor_startTime($tickTime, $countLoop, $maxIteration){
       unset($arr);
       unset($shx); // ----> fuite de mémoire ici!
       if($minTime >=1){
-        log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─ sleep time  : '.intval($minTime));
+        log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─ sleep time  : '.intval($minTime));
         sleep(intval($minTime));
         CT_motor_startTime(intval($minTime), $countLoop, $maxIteration);
       }else{
-        log::add('ColorTransition_actuator_mouv', 'debug', '║ ║ ╟─ sleep time  : '.($minTime));
+        log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─ sleep time  : '.($minTime));
         usleep($minTime*1000000);
         CT_motor_startTime($minTime, $countLoop,$maxIteration);
       }
@@ -98,7 +118,7 @@ function CT_motor_startTime($tickTime, $countLoop, $maxIteration){
       $shx->del(CT_motor::SHM_KEY); // delete key
       $shx->remove();
       unset($shx); 
-      log::add('ColorTransition_actuator_mouv', 'info', '║ ║ ╟─---------------------------   MOTOR END : ');
+      log::add('ColorTransition_actuator', 'info', '║ ║ ╟─---------------------------   MOTOR END : ');
       $countLoop=0;
     }
     

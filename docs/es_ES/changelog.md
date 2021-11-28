@@ -1,4 +1,9 @@
-# 8/11/2021
+# 28/11/2021
+- se han añadido comandos de bucle en las transiciones :
+  - bucle infinito: comando de acción única
+  - bucle : número de iteraciones definidas en un comando de mensaje
+
+*# 8/11/2021
  - Añadir plugin conf : 
    - parada de emergencia del motor
    - visualización de datos del motor

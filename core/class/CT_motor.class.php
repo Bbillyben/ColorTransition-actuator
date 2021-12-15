@@ -19,6 +19,7 @@
 /* * ***************************Includes********************************* */
 require_once __DIR__  . '/../../../../core/php/core.inc.php';
 require_once __DIR__  . '/shmSmart.class.php';
+require_once __DIR__  . '/ColorTransition_actuator.class.php';
 
 class CT_motor {
   public const SHM_KEY="colortransition_shm";
@@ -66,9 +67,11 @@ class CT_motor {
     $keyName=strval($cta_tr['id']);
     log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR cta arra '.$keyName.' : '.json_encode($cta_tr));
     
+    if(array_key_exists($keyName,$arr))unset($arr[$keyName]);
    	$arr[$keyName]=$cta_tr;
+
     $success=$shx->put(self::SHM_KEY,$arr);
-    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR global arra '.$keyName.' | '.count($arr).'_'.($success?1:0).' : '.json_encode( $shx->get(self::SHM_KEY)));
+    log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── MOTOR global array '.$keyName.' | '.count($arr).'_'.($success?1:0).' : '.json_encode( $shx->get(self::SHM_KEY)));
 
     // mise à l'index initial
     $eq= $cta_tr["eqL"];
@@ -77,8 +80,8 @@ class CT_motor {
     }
     $eq->refreshEquipementColor($cta_tr['move_index']); 
 	 
-    if(count($arr)==1){
-      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── ############# MOTOR ask for starting');
+    if(count(ColorTransition_actuator::getMotorPID())<=1){
+      log::add('ColorTransition_actuator', 'debug', '║ ║ ╟─── ############# MOTOR ask for starting :'.microtime(true));
       // temps max d'execution
       $maxTime = config::byKey('CT_motor_maxtime', 'ColorTransition_actuator', 0);
       if($maxTime==0)$maxTime=ColorTransition_actuator::MOTOR_MAX_TIME_DEFAULT;
@@ -149,7 +152,7 @@ class CT_motor {
      
      $serialArray['CT_equip']=$CT_equip;
      $serialArray['bornes']=$bornes;
-     $serialArray['colorArray']=$CT_equip->getColorsArray();
+     //$serialArray['colorArray']=$CT_equip->getColorsArray();
 
     
 

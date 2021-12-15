@@ -25,7 +25,7 @@ if (!isConnect()) {
 <form class="form-horizontal">
   <fieldset>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Temps Maximum d'exécution du moteur}}
+      <label class="col-md-4 control-label">{{Temps Maximum d'exécution du moteur2}}
         <sup><i class="fas fa-question-circle tooltips" title="{{par défaut 7 200 secondes}}"></i></sup>
       </label>
       <div class="col-lg-1">
@@ -46,5 +46,28 @@ if (!isConnect()) {
         <span> {{secondes}}</span>
       </div>
     </div>
+    <div class="form-group" style="padding-top:12px;">
+       <label class="col-md-4 control-label">{{Arrêt d'urgence moteur}}</label>
+        <div class="col-lg-1">
+          <a class="btn btn-danger  " id="bt_deleteAllMotor_Btn"><i class="fas fa-sync-alt"></i> {{Arreter le moteur}}</a>
+        </div>
+      </div>
+  
+  <div class="form-group">
+       <label class="col-md-4 control-label">{{Data Moteur en cours}}</label>
+        <div class="col-lg-5" >
+          <textarea id="txtJsonMotor" style="height: 94px;width: 100%;" >
+  
+  			</textarea>
+  			<div style="padding-top:5px;text-align: end;">
+  				<a class="btn btn-success   " id="bt_refreshMotor_Btn" ><i class="fas fa-sync-alt"></i> {{Rafraichir}}</a>
+  			</div>
+        </div>
+  		
+        
+      </div>
+
   </fieldset>
 </form>
+  
+ <?php include_file('desktop', 'ColorTransition_actuator_conf', 'js', 'ColorTransition_actuator');?>

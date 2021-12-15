@@ -46,7 +46,7 @@ Puede configurar varios dispositivos/comandos, de diferentes tipos, para que se 
 
 ## Comandos
 
- Se crean nueve comandos con el equipo: 
+ Se crean once comandos con el equipo: 
  * __Cursor__ : Información de tipo numérico que contiene el valor del cursor. Los límites mínimo y máximo se establecen a partir de los límites definidos en el dispositivo ColorTransition elegido
 * __Set Cursor__: Deslizador de tipo acción que permite definir el valor de *Cursor* entre los límites especificados
  * Cursor Target__ : Información de tipo numérico que contiene el valor de destino del cursor. Este valor se elimina al final de la transición
@@ -62,6 +62,9 @@ Puede configurar varios dispositivos/comandos, de diferentes tipos, para que se 
   * hacia abajo/0% o 
   * *Desde* el valor del `Cursor de destino` si se establece en el valor actual del `Cursor
 * __Stop__: Acción que detiene la transición
+* __Bucle infinito__ : Acción que permite lanzar un bucle, siempre iniciado hacia arriba (100% o objetivo), entre la posición actual del cursor y el 100% o el objetivo, y que se detendrá sólo en la llamada a ``Stop````'' o en el tiempo máximo de ejecución del motor
+* __Bucle__ : Acción de subtipo mensaje, que permite iniciar un bucle, siempre iniciado hacia arriba (100% u objetivo), entre la posición actual del cursor y el 100% o el objetivo, que se detendrá después de n iteraciones definidas en el título o el cuerpo del mensaje.
+
 
 > Nota:* las plantillas por defecto aplicadas a `Color actual`, `Set Cursor` y `Set Index` son las del plugin ColorTransform
 
@@ -104,4 +107,5 @@ Se pueden ajustar dos parámetros:
 
 * _Tiempo máximo de ejecución del motor__: Permite establecer un tiempo máximo de ejecución del motor, expresado en segundos. permite limitar el tiempo máximo por seguridad. El valor por defecto es de 7200 segundos => 2 horas.
 * __Tiempo mínimo de actualización de la transición__ : permite definir el tiempo mínimo que se puede definir en el equipo. Por defecto es 0,5. Cuidado, bajar demasiado puede provocar la ralentización de la transición, ¡o incluso de la máquina!
-
+* __Apagado de emergencia del motor__ : detener todas las transiciones y purgar la memoria, si es necesario.
+* __Data Current Engine__ : Los datos utilizados por el motor actual

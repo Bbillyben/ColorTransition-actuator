@@ -11,7 +11,10 @@
 		"Set Cible": "Establecer objetivo",
 		"Move in": "Move in",
 		"Move Out": "Move Out",
-		"Stop": "Stop"
+		"Stop": "Stop",
+		"Boucle Infinie": "Bucle infinito",
+		"Boucle": "Bucle",
+		"Pas de valeur entière détectée dans la commande": "No se ha detectado ningún valor entero en el comando"
 	},
 	"plugins\/ColorTransition_actuator\/core\/class\/CT_motor.class.php": {
 		"Equipement ColorTransition non trouvé": "Equipo ColorTransition no encontrado",
@@ -90,6 +93,10 @@
 		"por defecto 7.200 segundos": "",
 		"secondes": "segundos",
 		"Temps minimum de mise à jour de la transition": "Tiempo mínimo de actualización de la transición",
-		"un temps trop court ralentira tout le process": "un tiempo demasiado corto ralentizará todo el proceso"
+		"un temps trop court ralentira tout le process": "un tiempo demasiado corto ralentizará todo el proceso",
+		"Arrêt d\\'urgence moteur": "Parada de emergencia del motor",
+		"Arreter le moteur": "Apagado del motor",
+		"Data Moteur en cours": "Datos actuales del motor",
+		"Rafraichir": "Actualizar"
 	}
 }
